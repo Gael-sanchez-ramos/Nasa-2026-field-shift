@@ -9,7 +9,14 @@ npm ci
 npm run dev
 ```
 
-Select **Use sample field** to open the report. To enable satellite drawing, copy `.env.example` to `.env.local` and set `VITE_GOOGLE_MAPS_API_KEY`. Enable Maps JavaScript API and restrict the browser key to your local and deployed origins. See [Google Maps setup](https://developers.google.com/maps/documentation/javascript/get-api-key).
+Select **Use sample field** to open the report. To enable satellite drawing, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Enable Maps JavaScript API and restrict the browser key to your local and deployed origins. See [Google Maps setup](https://developers.google.com/maps/documentation/javascript/get-api-key).
+
+## Deploy to Vercel
+
+Import the repository and select the **Next.js** framework preset. Set
+`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` in the deployment environment before building.
+The Maps key is included in the browser bundle. Restrict a standard key to the
+Maps JavaScript API and the origins where the app runs.
 
 ## Data sources and method
 

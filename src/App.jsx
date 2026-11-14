@@ -1,8 +1,9 @@
+'use client'
+
 import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
-import './App.css'
 
 const sampleBoundary = [
   { lat: 25.699, lng: -99.242 }, { lat: 25.701, lng: -99.242 },
@@ -74,7 +75,7 @@ export default function App() {
             {drawing ? <>
               <button onClick={() => setPoints(points.slice(0, -1))} disabled={!points.length}>Undo point</button>
               <button className="primary" onClick={() => setDrawing(false)} disabled={!point}>Finish drawing</button>
-            </> : <button className="primary" disabled={!import.meta.env.VITE_GOOGLE_MAPS_API_KEY} onClick={() => {
+            </> : <button className="primary" disabled={!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} onClick={() => {
               resetReport()
               setPoints([])
               setDrawing(true)

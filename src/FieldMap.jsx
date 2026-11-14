@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 let mapsPromise
 
 function loadMaps() {
