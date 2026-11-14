@@ -4,17 +4,11 @@ import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
+import { rankRotations } from './score.js'
 
 const sampleBoundary = [
   { lat: 25.699, lng: -99.242 }, { lat: 25.701, lng: -99.242 },
   { lat: 25.701, lng: -99.238 }, { lat: 25.699, lng: -99.238 },
-]
-// Crop scenarios and soil verification: docs/FUENTES.md, sections 3–5.
-const inifap = 'https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1'
-const crops = [
-  { name: 'Grain sorghum again', summary: 'Current sequence in the sample scenario.' },
-  { name: 'Sorghum, then dry bean', summary: 'A sequence studied in Nuevo León.', source: inifap },
-  { name: 'Sorghum, then forage sorghum', summary: 'Exploratory option. Local suitability is not verified.' },
 ]
 const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
@@ -66,6 +60,7 @@ export default function App() {
   }
 
   const climate = report?.[scenario]
+  const comparison = rankRotations(weights, climate, scenario)
 
   return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
@@ -127,10 +122,10 @@ export default function App() {
           </section>
           <section className="report-section" aria-labelledby="crop-title">
             <h3 id="crop-title">Crop characteristics</h3>
-            <div className="crops">{crops.map(({ name, summary, source }) => <article key={name}>
+            <div className="crops">{comparison.ranked.map(({ name, summary, bestFor, isCurrent, forage }) => <article key={name}>
               <h4>{name}</h4>
               <p>{summary}</p>
-              {source && <a className="source" href={source}>INIFAP study, Table 6</a>}
+              <p>{isCurrent && 'Current sample sequence · '}{forage && 'Forage scenario · '}{bestFor.map(key => `Best for ${key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key} (team estimate)`).join(' · ')}</p>
             </article>)}</div>
             <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
           </section>
@@ -143,7 +138,12 @@ export default function App() {
                   onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
               </label>)}
             </div>
-            <p>Rotation ranking is not yet available. Review the options with a local advisor before planting.</p>
+            <p>{comparison.estimateNotice} Review the options with a local advisor before planting.</p>
+          </section>
+          <section className="report-section" aria-labelledby="comparison-title">
+            <h3 id="comparison-title">Comparison and limitations</h3>
+            <div aria-live="polite">{comparison.explanation && <p>{comparison.explanation} <a href={comparison.history.url}>NASA POWER source</a></p>}</div>
+            <p>No yield or income model. Local soil, crop suitability, planting windows and current local practice are not verified. POWER describes a regional grid cell, not a weather station in the field. Water, soil and income scores are illustrative team estimates, not measured benefits.</p>
           </section>
         </section>
       </div>
