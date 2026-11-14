@@ -2,6 +2,12 @@
 
 A crop rotation decision tool for farmers in Nuevo León. The first version shows regional historical climate for a sample field or a field outlined on a satellite map.
 
+## Team
+
+Read [docs/README.md](docs/README.md) before opening an AI chat or adding a screen.
+
+Do not add yourself as a collaborator on this repository. Do not add team members on the NASA Space Apps site. Do not add `Co-authored-by` trailers for an AI or for anyone outside the six-person team. If you cannot push, send the file in the team chat and Gael commits it. The team is closed: Ross, Gael, Mau, Edson, Salva, Axel.
+
 ## Run locally
 
 ```sh
