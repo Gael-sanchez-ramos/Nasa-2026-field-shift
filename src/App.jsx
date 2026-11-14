@@ -61,6 +61,8 @@ export default function App() {
 
   const climate = report?.[scenario]
   const comparison = rankRotations(weights, climate, scenario)
+  const leaders = comparison.ranked.filter(crop => Math.abs(crop.score - comparison.ranked[0].score) < 1e-10)
+  const topPriorities = priorities.filter(([key]) => comparison.weights[key] === Math.max(...Object.values(comparison.weights)))
 
   return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
@@ -122,10 +124,11 @@ export default function App() {
           </section>
           <section className="report-section" aria-labelledby="crop-title">
             <h3 id="crop-title">Crop characteristics</h3>
-            <div className="crops">{comparison.ranked.map(({ name, summary, bestFor, isCurrent, forage }) => <article key={name}>
+            <div className="crops">{comparison.ranked.map(({ name, id, summary, bestFor, isCurrent, forage }) => <article key={name}>
               <h4>{name}</h4>
               <p>{summary}</p>
-              <p>{isCurrent && 'Current sample sequence · '}{forage && 'Forage scenario · '}{bestFor.map(key => `Best for ${key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key} (team estimate)`).join(' · ')}</p>
+              <p>{isCurrent && 'Current sample sequence · '}{forage && 'Forage scenario · '}{bestFor.map(key => `Highest team rating for ${key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key}`).join(' · ')}</p>
+              {id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional rotation study, Table 6</a>}
             </article>)}</div>
             <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
           </section>
@@ -138,12 +141,16 @@ export default function App() {
                   onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
               </label>)}
             </div>
-            <p>{comparison.estimateNotice} Review the options with a local advisor before planting.</p>
+            <p>Move the sliders to give each priority more or less weight. The cards reorder using the team’s ratings for each crop option.</p>
           </section>
           <section className="report-section" aria-labelledby="comparison-title">
-            <h3 id="comparison-title">Comparison and limitations</h3>
-            <div aria-live="polite">{comparison.explanation && <p>{comparison.explanation} <a href={comparison.history.url}>NASA POWER source</a></p>}</div>
-            <p>No yield or income model. Local soil, crop suitability, planting windows and current local practice are not verified. POWER describes a regional grid cell, not a weather station in the field. Water, soil and income scores are illustrative team estimates, not measured benefits.</p>
+            <h3 id="comparison-title">How to read this comparison</h3>
+            <div aria-live="polite">
+              <p><strong>{leaders.length > 1 ? 'Tied for first' : 'Highest score'}:</strong> {leaders.map(crop => crop.name).join(' · ')}.</p>
+              <p>Highest-weight {topPriorities.length > 1 ? 'priorities' : 'priority'}: {topPriorities.map(([, label]) => label).join(', ')}. {weights.income + weights.water + weights.soil === 0 && 'All three sliders are at zero, so each priority gets equal weight.'}</p>
+              {climate && <p>Use the {climate.year} regional rainfall total of {climate.rain} mm to discuss water availability. The ranking uses your sliders and the team’s crop ratings. <a href={nasaSource}>NASA POWER source</a></p>}
+            </div>
+            <p>Before planting, confirm your soil type, local planting dates and water availability with a local advisor. Check local prices and costs if income is your priority.</p>
           </section>
         </section>
       </div>
