@@ -2,14 +2,15 @@
 
 import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
+import VegetationHistory from './VegetationHistory'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
 import { rankRotations } from './score.js'
 
+// Display-only boundary centered on the demo point. Actual field corners were not supplied.
 const sampleBoundary = [
-  { lat: 25.699, lng: -99.242 }, { lat: 25.701, lng: -99.242 },
-  { lat: 25.701, lng: -99.238 }, { lat: 25.699, lng: -99.238 },
-]
+  [-0.001, -0.002], [0.001, -0.002], [0.001, 0.002], [-0.001, 0.002],
+].map(([lat, lng]) => ({ lat: sample.location.lat + lat, lng: sample.location.lng + lng }))
 const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
@@ -61,6 +62,8 @@ export default function App() {
 
   const climate = report?.[scenario]
   const comparison = rankRotations(weights, climate, scenario)
+  const leaders = comparison.ranked.filter(crop => Math.abs(crop.score - comparison.ranked[0].score) < 1e-10)
+  const topPriorities = priorities.filter(([key]) => comparison.weights[key] === Math.max(...Object.values(comparison.weights)))
 
   return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
@@ -96,6 +99,36 @@ export default function App() {
             {loading ? 'Loading NASA data…' : 'Analyze field'}
           </button>
           {message && <p role="alert">{message}</p>}
+          <section className="report-section" aria-labelledby="priorities-title">
+            <h3 id="priorities-title">Farmer priorities</h3>
+            <p>Set what matters most to you. The crop options below update as you move the sliders.</p>
+            <div className="priority-inputs">
+              {priorities.map(([key, label]) => <label key={key}>
+                <span>{label} <strong aria-hidden="true">{weights[key]} / 5</strong></span>
+                <input type="range" min="0" max="5" value={weights[key]}
+                  onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
+              </label>)}
+            </div>
+          </section>
+          <section className="report-section" aria-labelledby="crop-title">
+            <h3 id="crop-title">Crop characteristics</h3>
+            <div className="crops">{comparison.ranked.map(({ name, id, summary, bestFor, isCurrent, forage }) => <article key={name}>
+              <h4>{name}</h4>
+              <p>{summary}</p>
+              <p>{isCurrent && 'Current sample sequence · '}{forage && 'Forage scenario · '}{bestFor.map(key => `Highest team rating for ${key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key}`).join(' · ')}</p>
+              {id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional rotation study, Table 6</a>}
+            </article>)}</div>
+            <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
+          </section>
+          <section className="report-section" aria-labelledby="comparison-title">
+            <h3 id="comparison-title">How to read this comparison</h3>
+            <div aria-live="polite">
+              <p><strong>{leaders.length > 1 ? 'Tied for first' : 'Highest score'}:</strong> {leaders.map(crop => crop.name).join(' · ')}.</p>
+              <p>Highest-weight {topPriorities.length > 1 ? 'priorities' : 'priority'}: {topPriorities.map(([, label]) => label).join(', ')}. {weights.income + weights.water + weights.soil === 0 && 'All three sliders are at zero, so each priority gets equal weight.'}</p>
+              {climate && <p>Use the {climate.year} regional rainfall total of {climate.rain} mm to discuss water availability. The ranking uses your sliders and the team’s crop ratings. <a href={nasaSource}>NASA POWER source</a></p>}
+            </div>
+            <p>Before planting, confirm your soil type, local planting dates and water availability with a local advisor. Check local prices and costs if income is your priority.</p>
+          </section>
           <section className="report-section" aria-labelledby="nasa-title">
           <h3 id="nasa-title">NASA observations</h3>
           {climate ? <>
@@ -105,7 +138,7 @@ export default function App() {
             </div>
             <div aria-live="polite">
               <h4>{climate.year} regional climate</h4>
-              <p>{report.isSample ? 'Sample location · Real NASA data' : 'Selected field location'} · {report.location.lat.toFixed(3)}°, {report.location.lng.toFixed(3)}°</p>
+              <p>{report.isSample ? 'Demo point · Illustrative boundary' : 'Selected field location'} · {report.location.lat.toFixed(4)}°, {report.location.lng.toFixed(4)}°</p>
               <dl className="metrics">
                 <div><dt>Annual rainfall</dt><dd>{climate.rain} mm</dd></div>
                 <div><dt>Highest temperature</dt><dd>{climate.high == null ? 'Unavailable' : climate.high.toFixed(1) + ' °C'}</dd></div>
@@ -113,37 +146,13 @@ export default function App() {
               </dl>
               <p className="source"><a href={nasaSource}>NASA POWER Daily API</a> · {report.count} complete rainfall years evaluated, 2015–2024 UTC. Typical is closest to median annual rainfall. Dry is the second-driest year.</p>
             </div>
-          </> : <p>Draw a field or load the sample to compare historical scenarios.</p>}
+          </> : <p>{report?.isSample ? "Climate data for this demo point is pending." : "Draw a field or load the sample to compare historical scenarios."}</p>}
+          {report?.isSample && <VegetationHistory location={report.location} />}
           </section>
           <section className="report-section" aria-labelledby="soil-title">
             <h3 id="soil-title">Local soil</h3>
-            <p><strong>Not verified</strong>{report?.isSample ? ' · The sample point returned no mean value at 0–5 cm.' : ' · Soil data for this field is pending.'}</p>
+            <p><strong>Not verified</strong> · Soil data for this field is pending.</p>
             <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
-          </section>
-          <section className="report-section" aria-labelledby="crop-title">
-            <h3 id="crop-title">Crop characteristics</h3>
-            <div className="crops">{comparison.ranked.map(({ name, summary, bestFor, isCurrent, forage }) => <article key={name}>
-              <h4>{name}</h4>
-              <p>{summary}</p>
-              <p>{isCurrent && 'Current sample sequence · '}{forage && 'Forage scenario · '}{bestFor.map(key => `Best for ${key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key} (team estimate)`).join(' · ')}</p>
-            </article>)}</div>
-            <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
-          </section>
-          <section className="report-section" aria-labelledby="priorities-title">
-            <h3 id="priorities-title">Farmer priorities</h3>
-            <div className="priority-inputs">
-              {priorities.map(([key, label]) => <label key={key}>
-                <span>{label} <strong aria-hidden="true">{weights[key]} / 5</strong></span>
-                <input type="range" min="0" max="5" value={weights[key]}
-                  onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
-              </label>)}
-            </div>
-            <p>{comparison.estimateNotice} Review the options with a local advisor before planting.</p>
-          </section>
-          <section className="report-section" aria-labelledby="comparison-title">
-            <h3 id="comparison-title">Comparison and limitations</h3>
-            <div aria-live="polite">{comparison.explanation && <p>{comparison.explanation} <a href={comparison.history.url}>NASA POWER source</a></p>}</div>
-            <p>No yield or income model. Local soil, crop suitability, planting windows and current local practice are not verified. POWER describes a regional grid cell, not a weather station in the field. Water, soil and income scores are illustrative team estimates, not measured benefits.</p>
           </section>
         </section>
       </div>

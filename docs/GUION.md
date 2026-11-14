@@ -36,11 +36,11 @@ Axel puede reescribirlos. No puede quitarles el año, los milímetros ni la adve
 
 Etiqueta del año, mientras el código siga igual:
 
-> 2023 is the second-driest complete year in this POWER series: 619 mm of corrected precipitation, and a hottest day of 47.14 °C. The year closest to median rainfall is 2018, with 691 mm and a hottest day of 42.83 °C. Source: NASA POWER Daily Point API. This is the regional cell, not a gauge on the field.
+> 2023 is the second-driest complete year in this POWER series: 623 mm of corrected precipitation, and a hottest day of 46.60 °C. The year closest to median rainfall is 2017, with 711 mm and a hottest day of 42.86 °C. Source: NASA POWER Daily Point API. This is the regional cell, not a gauge on the field.
 
 Esa frase está apretada a propósito. Versión para la tarjeta, más corta:
 
-> 2023, second-driest year in this cache: 619 mm and a daily maximum of 47.14 °C. NASA POWER, regional cell, not a field gauge.
+> 2023, second-driest year in this cache: 623 mm and a daily maximum of 46.60 °C. NASA POWER, regional cell, not a field gauge.
 
 Por qué, cuando gana el ahorro de agua:
 

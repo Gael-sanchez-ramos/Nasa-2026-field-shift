@@ -13,20 +13,23 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 - La vista de cooperativa o empresa es trabajo futuro. Se dice en una frase del pitch y no se diseña.
 - El ganado entra en la historia (falta agua, falta forraje). No hay pantalla de hato.
 - Se construye una sola opción. Las otras dos quedan escritas para que no se mezclen. La elegida es la opción A, abajo.
-- Dato NASA del producto: POWER, ya conectado. El resto de satélites no se prometen.
+- Datos NASA del MVP: POWER ya conectado. NDVI de HLS Sentinel-2 integrado como complemento para el punto de demo, pendiente de descargar para la coordenada corregida.
 - Base de datos: opcional. A las 21:00 del sábado, si Neon no responde, se borra de la lista y el cache sigue en JSON.
 
-## Lo que ya existe y no se vuelve a hacer
+## Estado del MVP — 14 de noviembre de 2026
 
-- `src/app/page.jsx` monta `src/App.jsx`.
-- "Use sample field" carga `src/sample.json` sin red.
-- "Analyze field" llama a POWER en vivo, con timeout de 25 segundos.
-- El reporte deja cambiar "Typical year" y "Dry year" y muestra lluvia anual, máxima y mínima.
-- Hay dos tarjetas de cultivo, todavía sin puntaje: "Plant sorghum again" y "Plant dry beans".
-- El mapa de Google está detrás de `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Si no hay llave, el botón de dibujar sale deshabilitado. El campo de ejemplo no depende de esa llave.
-- El README ya explica el deploy en Vercel.
+- La app de Next.js muestra tres opciones para el ciclo posterior al sorgo: repetir sorgo de grano, alternar con frijol seco y explorar sorgo forrajero. “Farmer priorities” aparece antes de las tarjetas. Los controles de ingreso, ahorro de agua y salud del suelo reordenan las opciones con estimaciones del equipo.
+- “Use sample field” abre el punto **24°53′30.9″ N, 99°32′35.1″ O** con un contorno ilustrativo. NASA POWER confirmó diez años completos (2015–2024). “Typical year” es **2017 (711 mm, máxima de 42.86 °C)** y “Dry year” es **2023 (623 mm, máxima de 46.60 °C)**, el segundo más seco del periodo. El resumen está en `src/sample.json` y la consulta se cita en [FUENTES.md](FUENTES.md).
+- “Analyze field” consulta POWER en vivo para un terreno dibujado. El mapa requiere `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. El clima del ejemplo se carga desde el JSON, sin consultar POWER en el momento.
+- “Vegetation history (NDVI)” está integrada para el punto de ejemplo. La extracción anterior correspondía a otra ubicación. La serie de **2023** para el nuevo punto queda pendiente en `src/sample-ndvi.json`.
+- “Local soil” muestra “Not verified”. El municipio, la textura del suelo y las ventanas locales de cultivo están pendientes de confirmar para el punto corregido.
 
-Eso es el mockup. El trabajo de hoy es volverlo una comparación de tres rotaciones que se mueva con los sliders.
+## Próximos pasos del demo
+
+1. **Descargar NDVI para el punto corregido.** Ejecutar `python3 scripts/fetch_ndvi.py` con una cuenta Earthdata autorizada para AppEEARS. Verificar que el resultado sea de 2023, coincida con el punto y contenga observaciones válidas. Mostrarlo como verdor observado en el punto durante el año seco, con la cita de NASA HLS Sentinel-2 a 30 m. [Fuente HLS en AppEEARS](https://www.earthdata.nasa.gov/data/alerts-outages/hls-vegetation-indices-products-available-appeears)
+2. **Confirmar los datos locales.** Verificar municipio y suelo con INEGI y buscar ventanas de siembra y duración de los ciclos con fuentes agronómicas locales. Mantener “Not verified” para datos pendientes y etiquetar el sorgo forrajero como opción exploratoria.
+3. **Agregar una métrica medible cuando estén las fechas.** Mostrar “Rainfall during the growing window” en milímetros por cultivo con la serie diaria de POWER. Agregar “Historical rainfall reliability” solo con un umbral respaldado. El orden de las tarjetas sigue basado en prioridades y estimaciones del equipo. El punto de equilibrio económico queda como mejora posterior si se consiguen costos y precios locales.
+4. **Probar y publicar.** Correr `npm run build`, revisar el recorrido “Use sample field” → “Dry year” → mover “Water saving” y abrir el enlace de Vercel en incógnito. Subir los cambios a la rama de trabajo y revisar el PR antes del merge.
 
 ## Tres opciones. Se hace una.
 
@@ -40,7 +43,7 @@ Una sola pantalla y una parcela de Nuevo León. Tres rotaciones, incluida la act
 
 El productor ve el trade-off de lo que a él le importa. El juez puede mover un slider y entenderlo sin que nadie explique el código.
 
-Cabe en lo que ya existe: el campo de ejemplo y POWER están en el repo. El riesgo técnico es bajo. Lo que no cabe es simular cosecha. En el cache, 2023 y 2018 se parecen en lluvia anual (619 mm y 691 mm) y se separan en el calor (47.14 °C y 42.83 °C). La frase cita eso. No dice "habrías perdido menos".
+Cabe en lo que ya existe: el campo de ejemplo y POWER están en el repo. El riesgo técnico es bajo. Lo que no cabe es simular cosecha. En el cache, 2023 y 2017 se parecen en lluvia anual (623 mm y 711 mm) y se separan en el calor (46.60 °C y 42.86 °C). La frase cita eso. No dice "habrías perdido menos".
 
 ### Opción B — El año difícil. No se hace.
 
@@ -72,10 +75,11 @@ Se deja fuera porque hoy no tenemos los municipios cerrados ni las cifras de SIA
 | Serie de 10 años | Se ve si el año difícil de verdad se separa | Medio | Bajo | Solo si la opción A ya está completa. Si no, se quedan los dos años del mockup |
 | Meses con suelo desnudo | El reto lo sugiere | Medio | Alto si las fechas están mal | No, salvo que Axel deje fechas citadas antes de las 18:00 |
 | Categoría del Monitor de Sequía | Contexto local | Medio | Bajo si es una frase con fecha | En el pitch, o una línea en la pantalla si Axel la copió |
-| SoilGrids del pin | Llena la entrada de suelo | Medio | Medio. En este pin la API vino vacía | Solo con números reales. Si no, "Not verified" |
+| SoilGrids del pin | Llena la entrada de suelo | Medio | Medio. Pendiente para el punto corregido | Solo con números reales. Si no, "Not verified" |
 | Dibujar cualquier polígono | Podría traer su predio | Ya está | Alto en vivo | Se queda en el código. No se usa en el pitch |
 | Vista de cooperativa | Otro usuario | Alto | Alto | No |
-| SMAP, NDVI o IMERG | Más datos de NASA | Alto | Alto sin Earthdata | No |
+| NDVI de HLS Sentinel-2 | Muestra el historial de verdor en el punto del demo | Bajo con la extracción lista | Depende de Earthdata para descargar | Sí, como complemento si hay observaciones válidas |
+| SMAP o IMERG | Contexto regional adicional | Alto | Depende de acceso y validación | Trabajo futuro |
 | Precio y rendimiento en pesos | El slider de income tendría dinero | Medio | Alto | No entra a la fórmula |
 | PDF o WhatsApp | Se lo lleva al predio | Medio | Bajo | No |
 
@@ -85,7 +89,7 @@ Una sola definición de terminado. Los horarios de abajo son revisiones de esa m
 
 Tiene que cumplir esto para poder presentarse:
 
-- [ ] "Use sample field" muestra 25.700° N, 99.240° O, lluvia, temperatura y la liga a POWER.
+- [ ] "Use sample field" muestra 24.8919167° N, 99.5430833° O, lluvia, temperatura y la liga a POWER.
 - [ ] Se ven cuatro bloques: NASA observations, Local soil, Crop characteristics, Farmer priorities.
 - [ ] Hay tres tarjetas. Una continúa el cultivo actual.
 - [ ] Mover un slider cambia el orden o las etiquetas.
@@ -174,7 +178,7 @@ Depende de Axel para las citas de cultivos. No depende de él para cerrar la opc
 - [ ] Domingo 08:15. Confirmar el link público. Probar incógnito.
 - [ ] Domingo 09:30. Declarar el freeze en el chat.
 
-Depende del frame de Mau a las 15:30, no antes. Depende de `src/score.js` a las 17:20. Si Ross se retrasa, Gael deja la frase con los números fijos de `src/sample.json` (2023, 619 mm, 47.14 °C) y un TODO visible en el código, no en la UI.
+Depende del frame de Mau a las 15:30, no antes. Depende de `src/score.js` a las 17:20. Si Ross se retrasa, Gael deja la frase con los números fijos de `src/sample.json` (2023, 623 mm, 46.60 °C) y un TODO visible en el código, no en la UI.
 
 ### Mau — una pantalla y el video
 
@@ -227,7 +231,7 @@ Axel presenta el problema y la parcela. Gael presenta la pantalla. No se interca
 | 15:30 | Gael | Frame de Mau | Sigue con la maquetación que ya tiene la app |
 | 16:00 | Ross | Pin definitivo de Salva | Se queda el 25.70, −99.24 y la UI no nombra municipio |
 | 16:30 | Ross | Cultivos citados por Axel | Fórmula con estimaciones etiquetadas |
-| 17:20 | Gael | `src/score.js` | Frase fija con 2023 y 619 mm, marcada en código como temporal |
+| 17:20 | Gael | `src/score.js` | Frase fija con 2023 y 623 mm, marcada en código como temporal |
 | 18:00 | Edson | Frases de Axel | Slides solo con títulos |
 | 19:30 | Mau | Pantalla con sliders vivos | Graba el domingo 08:15 |
 | 09:30 dom | Ross, el envío | URL de Vercel y URL de YouTube o del deck | Se usa el que sí abra. No se inventa un tercer formato |
@@ -353,7 +357,7 @@ Los nombres de los premios globales se copian de la guía de 2026 cuando alguien
 Respuestas cortas, en español, para el minuto de la sede. Si el juez pregunta en inglés, se contesta en inglés con la misma idea. No se alarga.
 
 **¿Qué tan preciso es?**
-Es el clima de la celda regional de NASA POWER, de 2015 a 2024, no un pluviómetro en el predio. En el cache, el año que el código marca como seco es 2023, con 619 mm, y tuvo una máxima diaria de 47.14 °C. No calculamos toneladas.
+Es el clima de la celda regional de NASA POWER, de 2015 a 2024, no un pluviómetro en el predio. En el cache, el año que el código marca como seco es 2023, con 623 mm, y tuvo una máxima diaria de 46.60 °C. No calculamos toneladas.
 
 **¿Cómo lo validaron?**
 Los números de lluvia y temperatura salen de POWER y están cacheados. Los cultivos se contrastan con SIAP y con la estadística de Nuevo León. Si un cultivo no aparece, la tarjeta se queda como escenario. El suelo de este pin no pasó SoilGrids: por eso dice "Not verified". La familia de Salva nos dio el problema del agua. No usamos su rancho como dato.

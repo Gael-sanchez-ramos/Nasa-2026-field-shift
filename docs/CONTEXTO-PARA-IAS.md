@@ -35,7 +35,7 @@ En la misma pantalla tienen que verse, con estos nombres, las cuatro entradas de
 
 Las prioridades son tres sliders: income, water saving, soil health. Al moverlos cambia el orden de las rotaciones y una frase de "por qué" que cita la fuente y dice qué no se sabe.
 
-El dato NASA del MVP es el que ya está conectado: [NASA POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/), parámetros `PRECTOTCORR`, `T2M_MAX`, `T2M_MIN`, comunidad `AG`, años 2015–2024. El campo de ejemplo está en `src/sample.json` y en el rectángulo de `src/App.jsx`: 25.700° N, 99.240° O. Ese punto todavía hay que verificarlo en satélite. No lo llames "parcela de China" en la interfaz hasta que Salva o Axel lo confirmen con el método de [FUENTES.md](FUENTES.md).
+El dato NASA del MVP es el que ya está conectado: [NASA POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/), parámetros `PRECTOTCORR`, `T2M_MAX`, `T2M_MIN`, comunidad `AG`, años 2015–2024. El campo de ejemplo está en `src/sample.json` y en el rectángulo de `src/App.jsx`: 24.8919167° N, 99.5430833° O. Ese punto todavía hay que verificarlo en satélite. No lo llames "parcela de China" en la interfaz hasta que Salva o Axel lo confirmen con el método de [FUENTES.md](FUENTES.md).
 
 ## Decisiones ya tomadas
 

@@ -11,18 +11,18 @@ Estas fuentes alcanzan para el requisito de premio global: usar al menos un dato
 | Uso en la app | Fuente oficial | Estado el 14 nov 2026 |
 | --- | --- | --- |
 | Lluvia diaria corregida `PRECTOTCORR` (mm/día), temperatura máxima `T2M_MAX` (°C) y mínima `T2M_MIN` (°C), comunidad `AG` | [POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) y [diccionario de parámetros](https://power.larc.nasa.gov/docs/tutorials/parameters/) | Ya está en `src/climate.js`. No pide llave. |
-| Resumen 2015–2024 del punto 25.70° N, 99.24° O | [Request ya usada por el repo](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M_MAX,T2M_MIN&community=AG&longitude=-99.24&latitude=25.70&start=20150101&end=20241231&format=JSON&time-standard=UTC) | Cacheada en `src/sample.json`. |
+| Resumen 2015–2024 del punto 24.8919167° N, 99.5430833° O | [Request ya usada por el repo](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M_MAX,T2M_MIN&community=AG&longitude=-99.5430833&latitude=24.8919167&start=20150101&end=20241231&format=JSON&time-standard=UTC) | Cacheada en `src/sample.json`. |
 | Resolución y método de la rejilla | [POWER Methodology](https://power.larc.nasa.gov/docs/methodology/) | Hay que copiar la frase de resolución de esa página antes de escribirla en la UI. No la inventes. |
 | Página del reto y lista de datos que NASA sugiere | [Field Shift, pestaña Resources](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=resources) | SMAP, GPM/IMERG, ECOSTRESS, Landsat, MODIS, POWER, GRACE, SRTM y Sentinel-2 de ESA están sugeridos. Sugerido no significa integrado. |
 
 Lo que `src/sample.json` ya trae, calculado por `src/climate.js` a partir de POWER. El código ordena los años con lluvia completa y llama "dry" al segundo más seco, no al más seco. No cambies ese significado en el texto sin cambiar el código.
 
-- Año cercano a la mediana de lluvia anual: 2018, 691 mm. Máxima diaria de ese año: 42.83 °C. Mínima diaria: −2.25 °C.
-- Año que el código marca como dry: 2023, 619 mm. Máxima diaria: 47.14 °C. Mínima diaria: 3.65 °C.
+- Año cercano a la mediana de lluvia anual: 2017, 711 mm. Máxima diaria de ese año: 42.86 °C. Mínima diaria: −0.13 °C.
+- Año que el código marca como dry: 2023, 623 mm. Máxima diaria: 46.60 °C. Mínima diaria: 4.17 °C.
 - Años completos evaluados: 10, de 2015 a 2024, calendario UTC.
 - Es clima regional de la celda de POWER, no la lluvia medida en el surco.
 
-Esos dos años se parecen en lluvia anual (619 contra 691 mm). La diferencia fuerte de este cache es el calor (47.14 °C contra 42.83 °C). En la UI hay que mostrar la serie y decir qué significa la etiqueta. Ross tiene la tarea de alinear la palabra "Dry year" con el año más seco si el equipo quiere ese significado. Hasta que el código cambie, el texto describe el código real.
+El año seco tuvo 88 mm menos de lluvia anual y una máxima diaria 3.74 °C más alta que el año típico. En la UI hay que mostrar la serie y decir qué significa la etiqueta. Ross tiene la tarea de alinear la palabra "Dry year" con el año más seco si el equipo quiere ese significado. Hasta que el código cambie, el texto describe el código real.
 
 ## 2. NASA, no prometerlo hoy
 
@@ -109,7 +109,7 @@ Método, unos 20 minutos por punto:
 
 | ID | Coordenadas | Hipótesis de lugar | Estado |
 | --- | --- | --- | --- |
-| P1, la de la demo | 25.700° N, 99.240° O. El rectángulo de la app va de 25.699 a 25.701 y de −99.242 a −99.238 | Municipio de China, Nuevo León. Temporal, sorgo y forraje. Hay que confirmarlo | El clima POWER ya está cacheado. SoilGrids volvió vacío. El nombre del municipio no está confirmado en el repo |
+| P1, la de la demo | 24.8919167° N, 99.5430833° O. El rectángulo es ilustrativo, centrado en el punto | Municipio y condiciones del cultivo por confirmar | El clima POWER ya está cacheado. Suelo y municipio pendientes de confirmar para el punto nuevo |
 | P2, solo si P1 ya quedó verificada | 25.30° N, 99.80° O | Valle hacia la zona citrícola. El predio demo seguiría siendo de cultivo anual, no una huerta | SoilGrids sí devolvió números el 14 nov 2026. El predio no está visto en satélite. No usar esos números todavía |
 | P3, no construir | Cerca de 27.24° N, 100.13° O | Anáhuac, norte, más seco y con riego. Solo como contraste verbal si alguien lo verifica en el mapa | Sin request de POWER del equipo. Fuera del MVP |
 
@@ -130,4 +130,4 @@ La entrega tiene un campo para datos de agencias socias y otras referencias. Ah�
 
 Borrador para que Ross lo ajuste cuando el cache esté congelado. No agregues satélites que no estén en el repo.
 
-> We used the NASA POWER Daily Point API, agroclimatology community, parameters PRECTOTCORR (corrected precipitation, mm/day), T2M_MAX and T2M_MIN (degrees Celsius), calendar years 2015 through 2024, UTC. The demo parcel is cached in the app from a point request at 25.70 N, 99.24 W. Documentation: https://power.larc.nasa.gov/docs/services/api/temporal/daily/ and https://power.larc.nasa.gov/docs/tutorials/parameters/. The values describe the regional POWER cell, not a gauge in the field.
+> We used the NASA POWER Daily Point API, agroclimatology community, parameters PRECTOTCORR (corrected precipitation, mm/day), T2M_MAX and T2M_MIN (degrees Celsius), calendar years 2015 through 2024, UTC. The demo parcel is cached in the app from a point request at 24.8919167 N, 99.5430833 W. Documentation: https://power.larc.nasa.gov/docs/services/api/temporal/daily/ and https://power.larc.nasa.gov/docs/tutorials/parameters/. The values describe the regional POWER cell, not a gauge in the field.
