@@ -27,6 +27,22 @@ Maps JavaScript API and the origins where the app runs.
 ## Data sources and method
 
 - [NASA POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) provides corrected precipitation (`PRECTOTCORR`, mm/day), daily maximum air temperature (`T2M_MAX`, °C), and daily minimum air temperature (`T2M_MIN`, °C). See the [parameter dictionary](https://power.larc.nasa.gov/docs/tutorials/parameters/).
-- [The raw sample request](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M_MAX,T2M_MIN&community=AG&longitude=-99.24&latitude=25.70&start=20150101&end=20241231&format=JSON&time-standard=UTC) covers an illustrative field at 25.70° N, 99.24° W. The verified summary is bundled in `src/sample.json`. Drawn fields use an interior point to request the regional grid data.
+- The demo point is 24°53′30.9″ N, 99°32′35.1″ W. The displayed boundary is illustrative. The [NASA POWER request](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M_MAX,T2M_MIN&community=AG&longitude=-99.5430833&latitude=24.8919167&start=20150101&end=20241231&format=JSON&time-standard=UTC) is cached in `src/sample.json`. Refresh the NDVI cache for this point using the script below. Drawn fields use an interior point to request the regional grid data.
 - The report sums rainfall over complete calendar years from 2015 through 2024 (UTC), then picks the year closest to median rainfall and the second-driest year. Temperature values are the hottest daily maximum and coldest daily minimum of each selected year. Values describe regional historical climate.
 - [INIFAP's Nuevo León study, Table 6](https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1) includes a sorghum–dry bean sequence. The crop cards introduce the options. Local planting windows, soil, and irrigation demand still need validation before doing a crop-specific comparison.
+
+## Cache vegetation history for the demo
+
+Run `python3 scripts/fetch_ndvi.py` in a terminal. Sign in to
+[NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/) with your Earthdata
+account first to authorize the service. The script prompts for credentials,
+submits a point extraction for the cached dry year and waits for the CSV.
+It saves valid daily values to `src/sample-ndvi.json`. Reload the local app
+and select **Use sample field**. The JSON contains observations and provenance
+only. The hosted application reads that cache at build time.
+
+The [AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/) supplies
+NDVI from [HLS Sentinel-2 Vegetation Indices v2.0](https://data.nasa.gov/dataset/hls-sentinel-2-multi-spectral-instrument-vegetation-indices-daily-global-30-m-v2-0-90ed0)
+at 30 m for the demo point. The [HLS VI user guide](https://lpdaac.usgs.gov/documents/2088/HLS_VI_User_Guide_V2.pdf)
+describes the product cloud mask. The script excludes missing and out-of-range
+values and takes the median when multiple values share a date.

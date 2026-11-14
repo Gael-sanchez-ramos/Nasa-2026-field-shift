@@ -35,3 +35,8 @@ dd{margin:4px 0 0;font-weight:700}
 a{color:#315b39}
 @media(max-width:850px){.workspace{grid-template-columns:1fr}}
 @media(max-width:480px){main{padding:24px 12px}.pad{padding:14px}.metrics{grid-template-columns:1fr}}
+
+.vegetation-history { margin-top: 16px; }
+.ndvi-observations { max-height: 16rem; overflow: auto; padding: 0; list-style: none; }
+.ndvi-observations li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.ndvi-observations meter { width: 100%; }

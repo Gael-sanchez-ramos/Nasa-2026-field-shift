@@ -2,14 +2,15 @@
 
 import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
+import VegetationHistory from './VegetationHistory'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
 import { rankRotations } from './score.js'
 
+// Display-only boundary centered on the demo point. Actual field corners were not supplied.
 const sampleBoundary = [
-  { lat: 25.699, lng: -99.242 }, { lat: 25.701, lng: -99.242 },
-  { lat: 25.701, lng: -99.238 }, { lat: 25.699, lng: -99.238 },
-]
+  [-0.001, -0.002], [0.001, -0.002], [0.001, 0.002], [-0.001, 0.002],
+].map(([lat, lng]) => ({ lat: sample.location.lat + lat, lng: sample.location.lng + lng }))
 const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
@@ -98,29 +99,16 @@ export default function App() {
             {loading ? 'Loading NASA data…' : 'Analyze field'}
           </button>
           {message && <p role="alert">{message}</p>}
-          <section className="report-section" aria-labelledby="nasa-title">
-          <h3 id="nasa-title">NASA observations</h3>
-          {climate ? <>
-            <div className="controls scenarios" aria-label="Historical scenario">
-              <button aria-pressed={scenario === 'typical'} onClick={() => setScenario('typical')}>Typical year</button>
-              <button aria-pressed={scenario === 'dry'} onClick={() => setScenario('dry')}>Dry year</button>
+          <section className="report-section" aria-labelledby="priorities-title">
+            <h3 id="priorities-title">Farmer priorities</h3>
+            <p>Set what matters most to you. The crop options below update as you move the sliders.</p>
+            <div className="priority-inputs">
+              {priorities.map(([key, label]) => <label key={key}>
+                <span>{label} <strong aria-hidden="true">{weights[key]} / 5</strong></span>
+                <input type="range" min="0" max="5" value={weights[key]}
+                  onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
+              </label>)}
             </div>
-            <div aria-live="polite">
-              <h4>{climate.year} regional climate</h4>
-              <p>{report.isSample ? 'Sample location · Real NASA data' : 'Selected field location'} · {report.location.lat.toFixed(3)}°, {report.location.lng.toFixed(3)}°</p>
-              <dl className="metrics">
-                <div><dt>Annual rainfall</dt><dd>{climate.rain} mm</dd></div>
-                <div><dt>Highest temperature</dt><dd>{climate.high == null ? 'Unavailable' : climate.high.toFixed(1) + ' °C'}</dd></div>
-                <div><dt>Lowest temperature</dt><dd>{climate.low == null ? 'Unavailable' : climate.low.toFixed(1) + ' °C'}</dd></div>
-              </dl>
-              <p className="source"><a href={nasaSource}>NASA POWER Daily API</a> · {report.count} complete rainfall years evaluated, 2015–2024 UTC. Typical is closest to median annual rainfall. Dry is the second-driest year.</p>
-            </div>
-          </> : <p>Draw a field or load the sample to compare historical scenarios.</p>}
-          </section>
-          <section className="report-section" aria-labelledby="soil-title">
-            <h3 id="soil-title">Local soil</h3>
-            <p><strong>Not verified</strong>{report?.isSample ? ' · The sample point returned no mean value at 0–5 cm.' : ' · Soil data for this field is pending.'}</p>
-            <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
           </section>
           <section className="report-section" aria-labelledby="crop-title">
             <h3 id="crop-title">Crop characteristics</h3>
@@ -132,17 +120,6 @@ export default function App() {
             </article>)}</div>
             <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
           </section>
-          <section className="report-section" aria-labelledby="priorities-title">
-            <h3 id="priorities-title">Farmer priorities</h3>
-            <div className="priority-inputs">
-              {priorities.map(([key, label]) => <label key={key}>
-                <span>{label} <strong aria-hidden="true">{weights[key]} / 5</strong></span>
-                <input type="range" min="0" max="5" value={weights[key]}
-                  onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
-              </label>)}
-            </div>
-            <p>Move the sliders to give each priority more or less weight. The cards reorder using the team’s ratings for each crop option.</p>
-          </section>
           <section className="report-section" aria-labelledby="comparison-title">
             <h3 id="comparison-title">How to read this comparison</h3>
             <div aria-live="polite">
@@ -151,6 +128,31 @@ export default function App() {
               {climate && <p>Use the {climate.year} regional rainfall total of {climate.rain} mm to discuss water availability. The ranking uses your sliders and the team’s crop ratings. <a href={nasaSource}>NASA POWER source</a></p>}
             </div>
             <p>Before planting, confirm your soil type, local planting dates and water availability with a local advisor. Check local prices and costs if income is your priority.</p>
+          </section>
+          <section className="report-section" aria-labelledby="nasa-title">
+          <h3 id="nasa-title">NASA observations</h3>
+          {climate ? <>
+            <div className="controls scenarios" aria-label="Historical scenario">
+              <button aria-pressed={scenario === 'typical'} onClick={() => setScenario('typical')}>Typical year</button>
+              <button aria-pressed={scenario === 'dry'} onClick={() => setScenario('dry')}>Dry year</button>
+            </div>
+            <div aria-live="polite">
+              <h4>{climate.year} regional climate</h4>
+              <p>{report.isSample ? 'Demo point · Illustrative boundary' : 'Selected field location'} · {report.location.lat.toFixed(4)}°, {report.location.lng.toFixed(4)}°</p>
+              <dl className="metrics">
+                <div><dt>Annual rainfall</dt><dd>{climate.rain} mm</dd></div>
+                <div><dt>Highest temperature</dt><dd>{climate.high == null ? 'Unavailable' : climate.high.toFixed(1) + ' °C'}</dd></div>
+                <div><dt>Lowest temperature</dt><dd>{climate.low == null ? 'Unavailable' : climate.low.toFixed(1) + ' °C'}</dd></div>
+              </dl>
+              <p className="source"><a href={nasaSource}>NASA POWER Daily API</a> · {report.count} complete rainfall years evaluated, 2015–2024 UTC. Typical is closest to median annual rainfall. Dry is the second-driest year.</p>
+            </div>
+          </> : <p>{report?.isSample ? "Climate data for this demo point is pending." : "Draw a field or load the sample to compare historical scenarios."}</p>}
+          {report?.isSample && <VegetationHistory location={report.location} />}
+          </section>
+          <section className="report-section" aria-labelledby="soil-title">
+            <h3 id="soil-title">Local soil</h3>
+            <p><strong>Not verified</strong> · Soil data for this field is pending.</p>
+            <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
           </section>
         </section>
       </div>
