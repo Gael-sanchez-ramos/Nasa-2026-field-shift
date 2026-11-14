@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap');
+:root{font-family:'DM Sans',system-ui,sans-serif;color:#192c24;background:#f3f2e8;font-synthesis:none}
+*{box-sizing:border-box}
+body{margin:0}
+button,select{font:inherit}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #7e8215;outline-offset:3px}
