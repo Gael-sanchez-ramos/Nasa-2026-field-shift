@@ -12,7 +12,7 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 - Usuario: un productor chico de temporal en Nuevo León. Una pantalla, una parcela.
 - La vista de cooperativa o empresa es trabajo futuro. Se dice en una frase del pitch y no se diseña.
 - El ganado entra en la historia (falta agua, falta forraje). No hay pantalla de hato.
-- Diferenciadores que no se cortan: los sliders de prioridades y la frase de por qué, con fuente.
+- Se construye una sola opción. Las otras dos quedan escritas para que no se mezclen. La elegida es la opción A, abajo.
 - Dato NASA del producto: POWER, ya conectado. El resto de satélites no se prometen.
 - Base de datos: opcional. A las 21:00 del sábado, si Neon no responde, se borra de la lista y el cache sigue en JSON.
 
@@ -28,85 +28,82 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 
 Eso es el mockup. El trabajo de hoy es volverlo una comparación de tres rotaciones que se mueva con los sliders.
 
-## La característica que sí nos separa
+## Tres opciones. Se hace una.
 
-Muchos equipos van a dibujar un polígono, jalar POWER y poner una recomendación. Eso ya lo parece nuestro mockup. No alcanza.
+No son tres productos encadenados ni tres entregas. Son tres formas distintas de resolver el reto. Hoy se construye una. Mañana se presenta esa misma.
 
-La pantalla que tiene que quedar en la memoria del juez es esta: tres rotaciones, incluida la actual, un año seco de NASA POWER al lado, y tres sliders. Al subir "water saving", el orden cambia y la frase de por qué cita el año, los milímetros y la liga de POWER. Abajo, un recuadro de lo que el equipo no sabe.
+Muchos equipos van a dibujar un polígono, jalar POWER y soltar una recomendación. El mockup ya se parece a eso. La opción que elijamos tiene que verse distinta en los dos minutos.
 
-"Reproducir tu historia" como simulación de cuánta cosecha habrías salvado no se hace. No tenemos rendimiento por parcela ni un modelo que se pueda defender. En este cache, además, 2023 y 2018 se parecen en lluvia anual (619 mm y 691 mm) y se separan en la temperatura (47.14 °C y 42.83 °C). Una frase de "habrías perdido menos agua" sería un invento. La versión honesta es un gráfico de los años y una comparación de opciones, no un resultado de cosecha.
+### Opción A — La balanza. Esta es la que se hace.
 
-Los sliders y el porqué se quedan aunque se acabe el tiempo. El gráfico de los diez años entra en el MVP 2 porque los datos ya están en el flujo de POWER. Si Ross no alcanza a pintar las diez barras, se quedan los dos años que ya muestra la app y la frase igual cita `src/sample.json`.
+Una sola pantalla y una parcela de Nuevo León. Tres rotaciones, incluida la actual. Tres sliders: income, water saving, soil health. Al moverlos cambia el orden. Una frase dice por qué, con el año y los milímetros de NASA POWER, y dice que no es una orden de siembra. Abajo queda lo que el equipo no sabe.
 
-## Otras ideas, y cuáles entran
+El productor ve el trade-off de lo que a él le importa. El juez puede mover un slider y entenderlo sin que nadie explique el código.
 
-Valor para el productor, esfuerzo, riesgo, y en qué MVP vive. "Bajo" cabe en una tarde de este equipo. "Alto" no cabe.
+Cabe en lo que ya existe: el campo de ejemplo y POWER están en el repo. El riesgo técnico es bajo. Lo que no cabe es simular cosecha. En el cache, 2023 y 2018 se parecen en lluvia anual (619 mm y 691 mm) y se separan en el calor (47.14 °C y 42.83 °C). La frase cita eso. No dice "habrías perdido menos".
 
-| Idea | Valor para el productor | Esfuerzo | Riesgo | Dónde queda |
+### Opción B — El año difícil. No se hace.
+
+El producto sería la historia 2015–2024: barras de lluvia, el año más caliente marcado, y un texto de cómo se vería cada rotación en ese año. Casi sin sliders.
+
+Se deja fuera porque el diferenciador que el equipo quiere mostrar es justo el slider. Con los números que ya tenemos, la historia anual de sequía es floja: los dos años no se separan tanto en milímetros. Como producto aparte nos dejaría una gráfica honesta y una demo que el juez no puede tocar. Si el sábado a las 22:30 la opción A ya está viva y Ross tiene tiempo, puede agregar las barras. Eso no convierte el proyecto en la opción B.
+
+### Opción C — La ficha del municipio. No se hace.
+
+Sin mapa. Una lista de municipios de Nuevo León. Cada uno abre una ficha con POWER, el cultivo que diga SIAP y tres rotaciones escritas. Se siente más "local" en el pitch y es más fácil de explicar.
+
+Se deja fuera porque hoy no tenemos los municipios cerrados ni las cifras de SIAP copiadas, y el mockup ya es una parcela con mapa. Esta opción se atasca en investigación, no en la demo. El nombre del municipio entra en la opción A solo cuando Salva confirme el pin. No se construye un selector de municipios.
+
+## Qué lleva la opción A, y qué no
+
+"Bajo" cabe esta tarde. "Alto" no se empieza.
+
+| Pieza | Valor para el productor | Esfuerzo | Riesgo | ¿Va en la opción A? |
 | --- | --- | --- | --- | --- |
-| Sliders de income, water saving y soil health que reordenan las tres rotaciones | Ve el trade-off de lo que a él le importa | Bajo | Bajo | MVP 2. Protegido |
-| Frase de por qué con año, mm, liga de POWER y una incertidumbre | Puede explicar la pantalla sin ser agrónomo | Bajo | Bajo | MVP 2. Protegido |
-| Tres rotaciones siempre visibles, una de ellas es "seguir con el sorgo" | Compara contra lo que ya hace, que es lo que pide el reto | Bajo | Bajo | MVP 1 |
-| Tres etiquetas a la vez: mejor para agua, mejor para suelo, mejor para ingreso. No hay un solo ganador | No se siente una orden | Bajo | Bajo | MVP 2 |
-| Botones Water first, Soil first, Income first | En 2 minutos el juez ve el cambio sin cazar el slider | Bajo | Bajo | MVP 3. Si el domingo va justo, se cortan y quedan los sliders |
-| Panel "What this does not know" | Le dice dónde hace falta un técnico local | Bajo | Bajo | MVP 2. Sube Validity |
-| Etiqueta "forage for the herd" en el sorgo forrajero | Conecta la parcela con el ganado sin simular un hato | Bajo | Bajo, si la tarjeta está marcada como escenario hasta que SIAP la confirme | MVP 2 |
-| Leyenda de que POWER es la celda regional, no el pluviómetro del predio | Evita que el juez crea que medimos su parcela | Bajo | Bajo. La frase de resolución se copia de la metodología de POWER | MVP 1 |
-| Campo de ejemplo cacheado, el pitch no llama a NASA en vivo | El demo sobrevive a la red de la sede | Bajo | Bajo | MVP 3. El botón ya existe |
-| Serie de 10 años, no solo dos tarjetas | Se ve si el "año seco" de verdad se separa | Medio | Bajo | MVP 2 si Ross termina el JSON de años. Si no, MVP futuro verbal |
-| Meses con suelo desnudo, a partir de fechas de siembra citadas | El reto lo sugiere y se entiende en un calendario | Medio | Alto si las fechas están mal | Solo si Axel deja una tabla citada antes de las 18:00. Si no, trabajo futuro |
-| Categoría del Monitor de Sequía del municipio | Contexto local que no es NASA | Medio | Bajo si es una frase con fecha | Pitch, o una tarjeta estática el domingo temprano |
-| SoilGrids del pin verificado | La entrada "local soil" deja de estar vacía | Medio | Medio. En P1 la API devolvió null | MVP 3 solo con números reales. Si no, la tarjeta dice "Not verified" |
-| Dibujar cualquier polígono | Un productor podría traer su predio | Ya está | Alto en vivo: llave, red y POWER | Se queda en la app. No se usa en el pitch |
-| Vista de varias parcelas para una cooperativa | Otro usuario | Alto | Alto | Trabajo futuro. Una frase en el pitch |
-| NDVI, SMAP o IMERG en el puntaje | Más observación de la Tierra | Alto | Alto sin Earthdata | Trabajo futuro. No se mencionan como si ya estuvieran |
-| Rendimiento y precio en pesos desde SIAP | El slider de income tendría dinero real | Medio | Alto si se presenta como pronóstico | Una cita en el texto de entrega, si Axel la copió. No entra a la fórmula |
-| PDF o tarjeta de WhatsApp | Se la podría llevar al predio | Medio | Bajo | Trabajo futuro |
+| Tres rotaciones, una es seguir con el sorgo | Compara contra lo que ya hace | Bajo | Bajo | Sí |
+| Sliders de income, water saving y soil health | Ve el trade-off | Bajo | Bajo | Sí. No se corta |
+| Frase de por qué con año, mm y liga de POWER | La puede leer sin ser agrónomo | Bajo | Bajo | Sí. No se corta |
+| "Best for water / soil / income" a la vez, sin un solo ganador | No se siente una orden | Bajo | Bajo | Sí |
+| Panel de lo que no se sabe | Sabe dónde hace falta un técnico | Bajo | Bajo | Sí |
+| Leyenda de que POWER es la celda regional | No cree que medimos su surco | Bajo | Bajo | Sí |
+| Etiqueta de forraje en una de las tres | Conecta con el ganado sin simular un hato | Bajo | Bajo | Sí, marcada como escenario si SIAP no lo confirma |
+| Campo de ejemplo cacheado | El pitch no depende de la red | Bajo | Bajo | Sí. El botón ya existe |
+| Botones Water first, Soil first, Income first | El juez ve el cambio más rápido | Bajo | Bajo | Solo si a las 22:30 los sliders ya funcionan |
+| Serie de 10 años | Se ve si el año difícil de verdad se separa | Medio | Bajo | Solo si la opción A ya está completa. Si no, se quedan los dos años del mockup |
+| Meses con suelo desnudo | El reto lo sugiere | Medio | Alto si las fechas están mal | No, salvo que Axel deje fechas citadas antes de las 18:00 |
+| Categoría del Monitor de Sequía | Contexto local | Medio | Bajo si es una frase con fecha | En el pitch, o una línea en la pantalla si Axel la copió |
+| SoilGrids del pin | Llena la entrada de suelo | Medio | Medio. En este pin la API vino vacía | Solo con números reales. Si no, "Not verified" |
+| Dibujar cualquier polígono | Podría traer su predio | Ya está | Alto en vivo | Se queda en el código. No se usa en el pitch |
+| Vista de cooperativa | Otro usuario | Alto | Alto | No |
+| SMAP, NDVI o IMERG | Más datos de NASA | Alto | Alto sin Earthdata | No |
+| Precio y rendimiento en pesos | El slider de income tendría dinero | Medio | Alto | No entra a la fórmula |
+| PDF o WhatsApp | Se lo lleva al predio | Medio | Bajo | No |
 
-## MVPs
+## Listo, para esta opción
 
-### MVP técnico 1 — sábado 17:00
+Una sola definición de terminado. Los horarios de abajo son revisiones de esa misma pantalla, no otros productos.
 
-Un flujo en inglés, de la pantalla vacía al reporte, con el campo de ejemplo. Todavía puede vivir solo en las laptops.
+Tiene que cumplir esto para poder presentarse:
 
-Criterios de aceptación:
+- [ ] "Use sample field" muestra 25.700° N, 99.240° O, lluvia, temperatura y la liga a POWER.
+- [ ] Se ven cuatro bloques: NASA observations, Local soil, Crop characteristics, Farmer priorities.
+- [ ] Hay tres tarjetas. Una continúa el cultivo actual.
+- [ ] Mover un slider cambia el orden o las etiquetas.
+- [ ] La frase nombra la rotación, el año, los mm de `src/sample.json` y dice que no es un pronóstico de cosecha.
+- [ ] Local soil dice "Not verified" mientras no haya un número real.
+- [ ] El panel de huecos menciona: sin modelo de rendimiento, suelo no verificado, POWER no es una estación en el predio.
+- [ ] La URL de Vercel abre en incógnito, sin login y sin la llave de Google.
+- [ ] El pitch no necesita que POWER responda en ese momento.
+- [ ] Todo el texto de la app está en inglés.
+- [ ] El municipio solo aparece si Salva lo confirmó.
 
-- [ ] "Use sample field" muestra coordenadas 25.700° N, 99.240° O, lluvia, temperatura y la liga a POWER.
-- [ ] Se ven cuatro bloques con los títulos NASA observations, Local soil, Crop characteristics, Farmer priorities.
-- [ ] Hay tres tarjetas. Una dice que continúa el cultivo actual.
-- [ ] Local soil dice "Not verified" y no inventa pH ni arcilla.
-- [ ] Hay una frase visible de que esto no es una orden de siembra y de que el número es regional.
-- [ ] Los sliders se ven, aunque el orden todavía no cambie.
-- [ ] Ross y Gael recorren el flujo sin explicar el código.
+Revisiones de la misma opción:
 
-### MVP técnico 2 — sábado 22:30, ya desde casa si hace falta
+- [ ] Sábado 17:00. Ross y Gael recorren la pantalla con las cuatro entradas y las tres tarjetas. Los sliders ya se ven. Si todavía no reordenan, se dice en voz alta y se sigue. No se abre otra opción.
+- [ ] Sábado 22:30. Los sliders ya cambian el resultado y la frase cita el cache. Mau puede grabar esa pantalla. Si no llegó, no se cambia de idea: el domingo 08:15 se termina esta pantalla, no se empieza la B ni la C.
+- [ ] Domingo 09:30. Link público congelado. `npm run build` pasó. Después de esa hora no hay pantallas nuevas.
 
-Los sliders hacen algo. La frase cita datos reales del cache.
-
-Criterios de aceptación:
-
-- [ ] Mover water saving, soil health o income cambia el orden o las etiquetas de las tres rotaciones.
-- [ ] Con los tres sliders en el mismo valor, el orden es estable y explicable.
-- [ ] La frase de por qué nombra la rotación, el año que el código está usando, los mm de `src/sample.json` y la URL de POWER.
-- [ ] La frase dice que el puntaje no es una cosecha estimada.
-- [ ] Se ven a la vez "best for water", "best for soil" y "best for income", aunque las tres no sean la misma tarjeta.
-- [ ] El panel de huecos menciona al menos: sin modelo de rendimiento, suelo no verificado en este pin, POWER no es una estación en el predio.
-- [ ] Mau puede grabar esa pantalla y se entiende sin que nadie hable.
-
-### MVP técnico 3 — domingo 9:30, funciones congeladas
-
-La misma pantalla, en un link público. Después de las 9:30 no se agregan pantallas ni datos.
-
-Criterios de aceptación:
-
-- [ ] La URL de Vercel abre en una ventana de incógnito, sin login y sin la llave de Google, usando "Use sample field".
-- [ ] El pitch de las 12:00 no necesita que POWER responda en ese momento.
-- [ ] Los textos de la app están en inglés.
-- [ ] Si P1 ya tiene municipio confirmado, el nombre del municipio aparece. Si no, no aparece.
-- [ ] Si SoilGrids sigue en null, la tarjeta sigue en "Not verified".
-- [ ] `npm run build` pasa en la máquina de Gael antes del deploy.
-
-### MVP del pitch — domingo 11:00
+### Pitch de esta misma opción — domingo 11:00
 
 - [ ] Guion de [GUION.md](GUION.md) ensayado dos veces con cronómetro, Axel y Gael, en menos de 2:00.
 - [ ] Plan B de la sede: tres capturas de la app (sliders bajos en agua, sliders altos en agua, panel de huecos) en el teléfono de Mau y de Axel.
@@ -121,17 +118,17 @@ Comer y pausar está dentro del horario. A las 00:00 se deja de escribir funcion
 ### Sábado 14
 
 - [ ] 13:00–13:20. Los seis leen `docs/README.md` y `docs/CONTEXTO-PARA-IAS.md`. Quien abra una IA, pega ese contexto primero.
-- [ ] 13:20–13:40. Ross lee en voz alta las decisiones cerradas y el orden de corte. Gael confirma que puede hacer deploy en su Vercel.
+- [ ] 13:20–13:40. Ross lee en voz alta que hoy solo se construye la opción A. Gael confirma que puede hacer deploy en su Vercel. Si alguien quiere la B o la C, se anota como frase de trabajo futuro y se sigue con A.
 - [ ] 13:40–15:30. Bloque 1, en paralelo. Ross arma la fórmula y el tercer cultivo con valores marcados como estimación. Gael deja las cuatro secciones y la tercera tarjeta en `src/App.jsx` sin esperar el Figma final. Mau hace un solo frame en Figma de esa pantalla, en inglés. Edson arma la retícula de las 7 slides, todavía con huecos. Salva y Axel verifican P1 con el método de `docs/FUENTES.md`.
 - [ ] 15:30–15:45. Pausa. Parados, sin pantalla.
-- [ ] 15:45–17:00. Gael aplica del frame solo jerarquía y texto, no un rediseño. Salva le pasa a Ross por escrito qué cultivo se cayó. A las 17:00 los dos de código hacen el recorrido del MVP 1 frente al equipo.
+- [ ] 15:45–17:00. Gael aplica del frame solo jerarquía y texto, no un rediseño. Salva le pasa a Ross por escrito qué cultivo se cayó. A las 17:00 los dos de código recorren la opción A frente al equipo.
 - [ ] 17:00–17:20. El resto mira la pantalla y anota frases que no se entienden. No se proponen pantallas nuevas en esa revisión.
 - [ ] 17:20–19:00. Ross conecta los sliders a la fórmula. Gael muestra la frase y el panel de huecos. Axel escribe las oraciones en inglés en `docs/GUION.md`, sección de textos de la app, o se las dicta a Gael.
 - [ ] 19:00–19:30. Comer.
-- [ ] 19:30–20:30. Cerrar MVP 2. Gael hace el primer deploy, aunque se vea feo. El primer deploy no puede ser el del domingo.
+- [ ] 19:30–20:30. Dejar los sliders vivos en la misma pantalla. Gael hace el primer deploy, aunque se vea feo. El primer deploy no puede ser el del domingo.
 - [ ] 20:00–22:00. Ventana para irse a casa. Quien siga en la sede, sigue. A las 22:00 ya no se depende de estar en la misma mesa.
 - [ ] 21:00. Corte de Neon. Si la base no está conectada y el campo de ejemplo no sale de ella, no se toca más.
-- [ ] 22:30. MVP 2 aceptado o recortado con la lista de abajo. Mau graba un primer video solo si la pantalla ya se entiende. Si no, se duerme y graba el domingo a las 08:15.
+- [ ] 22:30. La opción A pasa la revisión de sliders, o se recorta con la lista de abajo. Mau graba un primer video solo si la pantalla ya se entiende. Si no, se duerme y graba el domingo a las 08:15. No se cambia a otra opción.
 - [ ] 00:00. Se cierra el código de funciones. Después de esa hora solo se arregla un bug que impida cargar el campo de ejemplo.
 
 ### Domingo 15, en la UDEM desde las 08:00
@@ -164,13 +161,13 @@ Las dependencias están en la última columna de cada bloque. Si el insumo no ll
 - [ ] Domingo 08:15. No abrir features. Arreglar solo "el sample no carga".
 - [ ] Domingo 11:15. Ser quien aprieta Submit. Antes, abrir la app y el demo en incógnito.
 
-Depende de Axel para las citas de cultivos. No depende de él para tener un MVP: la estimación etiquetada ya deja avanzar.
+Depende de Axel para las citas de cultivos. No depende de él para cerrar la opción A: la estimación etiquetada ya deja avanzar.
 
 ### Gael — pantalla, merge, Vercel
 
 - [ ] 13:40. En `src/App.jsx`, cuatro secciones con los títulos en inglés, tercera tarjeta, sliders visibles, texto "Not verified" en suelo.
 - [ ] No reescribir el mapa ni el fetch de POWER.
-- [ ] 15:45. Tomar del Figma de Mau el orden visual, el tamaño de tipo y los colores. Ignorar componentes que no existan en el MVP 1.
+- [ ] 15:45. Tomar del Figma de Mau el orden visual, el tamaño de tipo y los colores. Ignorar componentes que no estén en la opción A.
 - [ ] 17:20. Conectar la salida de `src/score.js` a las tarjetas y a la frase.
 - [ ] 19:30. Primer deploy en su Vercel. Framework Next.js. La app tiene que abrir el campo de ejemplo sin la variable de Google.
 - [ ] Merge a `main` solo él. Antes del merge, `npm run build` en local.
@@ -182,7 +179,7 @@ Depende del frame de Mau a las 15:30, no antes. Depende de `src/score.js` a las 
 ### Mau — una pantalla y el video
 
 - [ ] 15:30. Un frame de Figma, escritorio, en inglés, con las cuatro secciones, tres tarjetas y tres sliders. No un design system, no versión móvil, no logo de NASA.
-- [ ] 17:20. Mirar el MVP 1 y anotar solo problemas de lectura: contraste, texto cortado, botones que parecen la acción principal.
+- [ ] 17:20. Mirar la pantalla de la opción A y anotar solo problemas de lectura: contraste, texto cortado, botones que parecen la acción principal.
 - [ ] 22:30 o domingo 08:15. Grabar el video siguiendo el shot list de [GUION.md](GUION.md).
 - [ ] Subirlo a YouTube público o no listado. El enlace tiene que abrir sin iniciar sesión.
 - [ ] Quemar el texto en inglés en el video. No depender de los subtítulos automáticos.
@@ -257,7 +254,7 @@ Archivos que no se tocan a dos manos:
 
 - `src/App.jsx` lo edita Gael.
 - `src/score.js` lo edita Ross.
-- `package.json` no se le agregan librerías después de las 19:30. El gráfico de barras se hace con CSS o SVG. No hace falta una librería de mapas nueva ni un cliente de base de datos para el MVP.
+- `package.json` no se le agregan librerías después de las 19:30. El gráfico de barras se hace con CSS o SVG. No hace falta una librería de mapas nueva ni un cliente de base de datos para la opción A.
 
 Estructura que se busca esta noche:
 
@@ -374,7 +371,7 @@ Una IA ayudó a escribir código y documentos. La idea, el caso de Nuevo León y
 No están en el producto. POWER sí está, y con eso se cumple el uso de un recurso NASA. SMAP, MODIS e IMERG piden cuenta de Earthdata y un procesamiento que hoy nos haría inventar el hueco. Están en el trabajo futuro.
 
 **¿Por qué no cítricos, si Nuevo León es cítricos?**
-Porque el reto pide explorar rotaciones. Un huerto de naranja no se rota cada temporada. El MVP es sorgo, frijol y forraje. Los cítricos se quedan como contexto del estado cuando tengamos la cifra abierta en el PDF oficial.
+Porque el reto pide explorar rotaciones. Un huerto de naranja no se rota cada temporada. La opción A es sorgo, frijol y forraje. Los cítricos se quedan como contexto del estado cuando tengamos la cifra abierta en el PDF oficial.
 
 **¿Y el ganado?**
 Salva nos dijo que la falta de agua también pega al hato. Por eso una de las opciones es forraje. No modelamos animales ni carga animal.

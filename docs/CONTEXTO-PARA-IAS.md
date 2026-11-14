@@ -22,7 +22,9 @@ Estás ayudando a un equipo de seis estudiantes en el NASA Space Apps Challenge 
 
 ## Qué hay que construir
 
-Una herramienta de apoyo a la decisión, en inglés, para un pequeño productor de temporal en Nuevo León. Le ayuda a explorar tres rotaciones. No le dice qué sembrar.
+Hay tres ideas en [PLAN.md](PLAN.md). Solo se construye la opción A, "La balanza". La opción B (la historia del año difícil como producto) y la opción C (ficha por municipio) no se programan.
+
+La opción A es una herramienta de apoyo a la decisión, en inglés, para un pequeño productor de temporal en Nuevo León. Una pantalla. Una parcela. Tres rotaciones. Le ayuda a explorarlas. No le dice qué sembrar.
 
 En la misma pantalla tienen que verse, con estos nombres, las cuatro entradas del reto:
 

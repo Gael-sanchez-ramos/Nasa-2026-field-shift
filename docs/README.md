@@ -7,7 +7,7 @@ Estos archivos se escribieron el sábado 14 de noviembre de 2026, 12:33 CST, sob
 ## Léelos en este orden
 
 1. [CONTEXTO-PARA-IAS.md](CONTEXTO-PARA-IAS.md). Pégalo al inicio del chat de cualquier IA antes de pedirle código, copy o slides.
-2. [PLAN.md](PLAN.md). Horario, MVPs, tareas, repo, datos, cortes, entrega y preguntas de jueces.
+2. [PLAN.md](PLAN.md). Las tres opciones, la que sí se construye, horario, tareas, repo, datos, cortes, entrega y preguntas de jueces.
 3. [FUENTES.md](FUENTES.md). Qué dato se puede usar, de dónde sale y qué sigue siendo hipótesis.
 4. [GUION.md](GUION.md). Los 2 minutos del domingo, el minuto de preguntas y el video de 30 segundos.
 
