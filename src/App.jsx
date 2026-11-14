@@ -9,9 +9,15 @@ const sampleBoundary = [
   { lat: 25.699, lng: -99.242 }, { lat: 25.701, lng: -99.242 },
   { lat: 25.701, lng: -99.238 }, { lat: 25.699, lng: -99.238 },
 ]
+// Crop scenarios and soil verification: docs/FUENTES.md, sections 3–5.
+const inifap = 'https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1'
 const crops = [
-  ['Plant sorghum again', 'Continues the current crop sequence.'],
-  ['Plant dry beans', 'Adds a different crop to the rotation.'],
+  { name: 'Grain sorghum again', summary: 'Current sequence in the sample scenario.' },
+  { name: 'Sorghum, then dry bean', summary: 'A sequence studied in Nuevo León.', source: inifap },
+  { name: 'Sorghum, then forage sorghum', summary: 'Exploratory option. Local suitability is not verified.' },
+]
+const priorities = [
+  ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
 
 export default function App() {
@@ -21,6 +27,7 @@ export default function App() {
   const [report, setReport] = useState(null)
   const [message, setMessage] = useState('')
   const [irrigation, setIrrigation] = useState('Limited')
+  const [weights, setWeights] = useState({ income: 3, water: 3, soil: 3 })
   const [loading, setLoading] = useState(false)
   const request = useRef(null)
   const point = fieldPoint(points)
@@ -94,13 +101,15 @@ export default function App() {
             {loading ? 'Loading NASA data…' : 'Analyze field'}
           </button>
           {message && <p role="alert">{message}</p>}
+          <section className="report-section" aria-labelledby="nasa-title">
+          <h3 id="nasa-title">NASA observations</h3>
           {climate ? <>
             <div className="controls scenarios" aria-label="Historical scenario">
               <button aria-pressed={scenario === 'typical'} onClick={() => setScenario('typical')}>Typical year</button>
               <button aria-pressed={scenario === 'dry'} onClick={() => setScenario('dry')}>Dry year</button>
             </div>
             <div aria-live="polite">
-              <h3>{climate.year} regional climate</h3>
+              <h4>{climate.year} regional climate</h4>
               <p>{report.isSample ? 'Sample location · Real NASA data' : 'Selected field location'} · {report.location.lat.toFixed(3)}°, {report.location.lng.toFixed(3)}°</p>
               <dl className="metrics">
                 <div><dt>Annual rainfall</dt><dd>{climate.rain} mm</dd></div>
@@ -109,11 +118,33 @@ export default function App() {
               </dl>
               <p className="source"><a href={nasaSource}>NASA POWER Daily API</a> · {report.count} complete rainfall years evaluated, 2015–2024 UTC. Typical is closest to median annual rainfall. Dry is the second-driest year.</p>
             </div>
-            <div className="crops">{crops.map(([name, summary]) => <article key={name}>
-              <h3>{name}</h3><p>{summary}</p>
-            </article>)}</div>
-            <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm the water available during each crop’s growing window.'} Local planting windows and soil are pending validation.</p>
           </> : <p>Draw a field or load the sample to compare historical scenarios.</p>}
+          </section>
+          <section className="report-section" aria-labelledby="soil-title">
+            <h3 id="soil-title">Local soil</h3>
+            <p><strong>Not verified</strong>{report?.isSample ? ' · The sample point returned no mean value at 0–5 cm.' : ' · Soil data for this field is pending.'}</p>
+            <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
+          </section>
+          <section className="report-section" aria-labelledby="crop-title">
+            <h3 id="crop-title">Crop characteristics</h3>
+            <div className="crops">{crops.map(({ name, summary, source }) => <article key={name}>
+              <h4>{name}</h4>
+              <p>{summary}</p>
+              {source && <a className="source" href={source}>INIFAP study, Table 6</a>}
+            </article>)}</div>
+            <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
+          </section>
+          <section className="report-section" aria-labelledby="priorities-title">
+            <h3 id="priorities-title">Farmer priorities</h3>
+            <div className="priority-inputs">
+              {priorities.map(([key, label]) => <label key={key}>
+                <span>{label} <strong aria-hidden="true">{weights[key]} / 5</strong></span>
+                <input type="range" min="0" max="5" value={weights[key]}
+                  onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
+              </label>)}
+            </div>
+            <p>Rotation ranking is not yet available. Review the options with a local advisor before planting.</p>
+          </section>
         </section>
       </div>
     </main>
