@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import FieldMap from './FieldMap'
 import VegetationHistory from './VegetationHistory'
 import RootZoneMoisture from './RootZoneMoisture'
@@ -42,6 +42,30 @@ const mapLayers = [
   ['soilgrids', 'Soil water retention', 'ISRIC SoilGrids · 15–30 cm deep'],
 ]
 
+function CropIllustration({ kind }) {
+  return <div className="crop-illustration" aria-hidden="true"><svg viewBox="0 0 64 72" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {kind === 'sorghum-bean' ? <>
+      <path d="M31 66V34M31 49C12 49 10 36 12 30c13-1 20 6 19 19ZM32 40c0-16 10-24 23-21 0 13-9 23-23 21Z" />
+      <path d="M17 37l13 10m9-15 10-8" />
+    </> : <>
+      <path d="M32 67V15m0 43C19 57 12 49 10 39c13 0 21 8 22 19Zm0-10c13-1 20-9 22-19-13 0-21 8-22 19Z" />
+      {[0,1,2].map(i => <path key={i} d={`M32 ${12+i*8}c-9 0-12-5-9-8 5-1 8 3 9 8Zm0 0c9 0 12-5 9-8-5-1-8 3-9 8Z`} />)}
+      {kind === 'forage-sorghum' && <path d="M43 67V48m0 10c8-1 11-6 12-12-8 0-11 5-12 12Z" />}
+    </>}
+  </svg></div>
+}
+
+function Navigation({ view, onMap, onReport, hasReport }) {
+  return <header className="top">
+    <button className="brand" onClick={onMap} aria-label="Xopan home"><span className="brand-mark" aria-hidden="true">✳</span><strong>Xopan<span className="brand-period">.</span></strong></button>
+    <nav aria-label="Main navigation">
+      <button aria-current={view === 'map' ? 'page' : undefined} onClick={onMap}>Explore map</button>
+      <button aria-current={view === 'report' ? 'page' : undefined} disabled={!hasReport} onClick={onReport}>Field report</button>
+    </nav>
+    <span className="pilot"><i />Nuevo León pilot</span>
+  </header>
+}
+
 export default function App() {
   const [points, setPoints] = useState([])
   const [drawing, setDrawing] = useState(false)
@@ -55,6 +79,57 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const request = useRef(null)
   const point = fieldPoint(points)
+  const cropContainer = useRef(null)
+  const cropPositions = useRef(new Map())
+
+  useLayoutEffect(() => {
+    const cards = cropContainer.current?.querySelectorAll('article') ?? []
+    const next = new Map()
+    for (const card of cards) {
+      const rect = card.getBoundingClientRect()
+      const previous = cropPositions.current.get(card.dataset.crop)
+      next.set(card.dataset.crop, rect)
+      if (previous && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        card.getAnimations().forEach(animation => animation.cancel())
+        card.animate([{ transform: `translate(${previous.left - rect.left}px, ${previous.top - rect.top}px)` }, { transform: 'translate(0, 0)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' })
+      }
+    }
+    cropPositions.current = next
+  }, [weights, view])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [view])
+
+  useEffect(() => {
+    // Keep native details semantics while animating both opening and closing.
+    const animations = new Map()
+    const click = event => {
+      const summary = event.target.closest('summary')
+      if (!summary || event.target.closest('a, button, input, select')) return
+      const detail = summary.parentElement
+      if (detail.tagName !== 'DETAILS' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+      event.preventDefault()
+      if (animations.has(detail)) return
+      const opening = !detail.open
+      const start = detail.getBoundingClientRect().height
+      if (opening) detail.open = true
+      const end = opening ? detail.getBoundingClientRect().height : summary.getBoundingClientRect().height
+      detail.style.overflow = 'hidden'
+      const animation = detail.animate([{ height: `${start}px` }, { height: `${end}px` }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' })
+      animations.set(detail, animation)
+      animation.onfinish = () => {
+        detail.open = opening
+        detail.style.overflow = ''
+        animations.delete(detail)
+      }
+    }
+    document.addEventListener('click', click)
+    return () => {
+      document.removeEventListener('click', click)
+      animations.forEach((animation, detail) => { animation.cancel(); detail.style.overflow = '' })
+    }
+  }, [view])
 
   function resetReport() {
     request.current?.abort()
@@ -97,6 +172,7 @@ export default function App() {
     }
   }
 
+  const navigation = <Navigation view={view} hasReport={Boolean(report)} onMap={() => setView('map')} onReport={() => setView('report')} />
   const climate = report?.[scenario]
   const rainGap = report?.typical && report?.dry ? report.typical.rain - report.dry.rain : null
   const comparison = rankRotations(weights, climate, scenario)
@@ -139,12 +215,13 @@ export default function App() {
   }[activeLayer] ?? null
 
   if (view === 'map') return <>
-    <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
-    <main>
-      <h1>{report && !drawing ? 'Explore your field' : 'Start by outlining your field.'}</h1>
+    {navigation}
+    <main key="map" className="map-page">
+      <div className="eyebrow">FIELD INTELLIGENCE / NUEVO LEÓN</div>
+      <h1>{report && !drawing ? 'Explore your field' : 'A closer look at your land.'}</h1>
       <p className="intro">{report && !drawing
         ? 'Open Map view to choose a layer. Select View report to return to your crop comparison.'
-        : 'Find your field on the map and tap its corners. Close the outline, then select Analyze field.'}</p>
+        : 'Explore the land. Understand the conditions. Find a rotation that fits your priorities.'}</p>
       <section className="panel map-panel" aria-label="Field map">
         <FieldMap points={points} drawing={drawing} center={report?.location ?? sample.location} recenterRequest={sampleSelections}
           overlay={overlay} onPoint={point => setPoints(previous => [...previous, point])}>
@@ -165,18 +242,20 @@ export default function App() {
         </FieldMap>
         <div className="controls pad map-controls">
           {drawing ? <>
+            <button onClick={() => { setDrawing(false); setPoints([]) }}>Cancel drawing</button>
             <button onClick={() => setPoints(points.slice(0, -1))} disabled={!points.length}>Undo point</button>
-            <button className="primary" onClick={() => setDrawing(false)} disabled={!point}>Finish drawing</button>
+            <button className="primary" onClick={() => setDrawing(false)} disabled={points.length < 3 || !point}>Finish drawing</button>
           </> : <button className="primary" disabled={!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} onClick={() => {
             resetReport()
             setPoints([])
             setDrawing(true)
           }}>Draw your field</button>}
           <span className="spacer" />
-          <span className="controls-note">No field to draw?</span>
+          <span className="controls-note">Explore a real example</span>
           <button onClick={useSample}>Use sample field</button>
         </div>
       </section>
+      {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && <p className="map-help">Satellite drawing is unavailable in this environment. The sample report is ready to explore.</p>}
       <section className="panel pad report-preview" aria-labelledby="report-preview-title">
         <div className="preview-head">
           <h2 id="report-preview-title">Field report</h2>
@@ -194,19 +273,24 @@ export default function App() {
           {reportSections.map(name => <li key={name}>{name}</li>)}
         </ul>
       </section>
+      <footer className="page-footer"><strong>Xopan.</strong><span>Grounded in observations. Guided by you.</span><span>Nuevo León · NASA Space Apps 2026</span></footer>
     </main>
   </>
 
   return <>
-    <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
-    <main>
-      <h1>What could you plant after sorghum?</h1>
-      <p className="intro">Move the sliders. The three options below change order.</p>
+    {navigation}
+    <main key="report" className="report-page">
+      <div className="report-heading"><div><div className="eyebrow">YOUR LAND. YOUR PRIORITIES.</div>
+      <h1>A new season of possibilities.</h1>
+      <p className="intro">Compare what comes after sorghum, with your field in perspective.</p></div>
+      <div className="scenario-switch" role="group" aria-label="Report year">
+        {['typical', 'dry'].map(key => <button key={key} aria-pressed={scenario === key} onClick={() => setScenario(key)}>{key === 'dry' ? 'Dry year' : 'Typical year'}<span>{report[key].year}</span></button>)}
+      </div></div>
       <div className="workspace">
         <div className="col">
           <section className="panel" aria-labelledby="field-title">
             <div className="pad">
-              <h2 id="field-title">Your field</h2>
+              <div className="eyebrow">01 / THE PLACE</div><h2 id="field-title">Your field</h2>
               <p>{report.isSample ? 'Demo point' : 'Selected field'} · {Math.abs(report.location.lat).toFixed(4)}° N, {Math.abs(report.location.lng).toFixed(4)}° W</p>
             </div>
             <FieldMap compact points={points} drawing={false} center={report.location} recenterRequest={sampleSelections}
@@ -259,13 +343,17 @@ export default function App() {
         <div className="col decision-col">
           <section className="panel pad" aria-labelledby="priorities-title">
             <div className="section-head">
-              <h2 id="priorities-title">Farmer priorities</h2>
+              <div><div className="eyebrow">02 / WHAT MATTERS TO YOU</div><h2 id="priorities-title">Farmer priorities</h2></div>
               <span className="badge">You set these</span>
+            </div>
+            <div className="priority-presets" role="group" aria-label="Priority presets">
+              {priorities.map(([key, label]) => <button key={key} onClick={() => setWeights(Object.fromEntries(priorities.map(([criterion]) => [criterion, criterion === key ? 5 : 1])))}>{label} first</button>)}
+              <button onClick={() => setWeights({ income: 3, water: 3, soil: 3 })}>Reset</button>
             </div>
             <div className="priority-inputs">
               {priorities.map(([key, label]) => <label key={key}>
                 <span>{label} <strong>{Math.round(comparison.weights[key] * 100)}%</strong></span>
-                <input type="range" min="0" max="5" value={weights[key]} aria-valuetext={`${weights[key]} out of 5`}
+                <input type="range" min="0" max="5" value={weights[key]} style={{ '--range-fill': `${weights[key] * 20}%` }} aria-valuetext={`${weights[key]} out of 5`}
                   onChange={event => setWeights(previous => ({ ...previous, [key]: Number(event.target.value) }))} />
                 <span className="scale" aria-hidden="true"><span>Less</span><span>More</span></span>
               </label>)}
@@ -279,16 +367,17 @@ export default function App() {
           </section>
           <section className="panel pad suggestions" aria-labelledby="crop-title">
             <div className="section-head">
-              <h2 id="crop-title">Rotation suggestions</h2>
+              <div><div className="eyebrow">03 / EXPLORE THE TRADE-OFFS</div><h2 id="crop-title">Rotation suggestions</h2></div><span className="badge">3 possibilities</span>
             </div>
             <p>Ranked by your priorities and team estimates. Climate and soil data help you compare risks; they do not change this order.</p>
-            <div className="crops">{comparison.ranked.map(crop => {
+            <div className="crops" ref={cropContainer}>{comparison.ranked.map(crop => {
               const rank = comparison.ranked.findIndex(option => Math.abs(option.score - crop.score) < 1e-10) + 1
-              return <article key={crop.id} className={rank === 1 ? 'leader' : undefined}>
+              return <article data-crop={crop.id} key={crop.id} className={rank === 1 ? 'leader' : undefined}>
                 <div className="crop-head">
                   <span className="rank" aria-label={`Rank ${rank}`}>{rank}</span>
                   <span className="badge">{crop.isCurrent ? 'Current sequence' : crop.forage ? 'Forage' : 'Exploratory'}</span>
                 </div>
+                <CropIllustration kind={crop.id} />
                 <h3>{crop.name}</h3>
                 <p>{cropAdvice[crop.id]}</p>
                 {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional study, Table 6</a>}
@@ -300,7 +389,7 @@ export default function App() {
         </div>
       </div>
       <section className="evidence" aria-labelledby="field-context-title">
-        <h2 id="field-context-title">What to check for your field</h2>
+        <div className="evidence-heading"><div><div className="eyebrow">04 / THE EVIDENCE</div><h2 id="field-context-title">The story beneath the surface.</h2></div><p>Explore the observations behind your field.</p></div>
         <div className="dash-grid">
           {report.isSample && climate && <RootZoneMoisture location={report.location} year={climate.year} />}
           {report.isSample && <VegetationHistory location={report.location} />}
@@ -316,6 +405,7 @@ export default function App() {
           </details>
         </div>
       </section>
+      <footer className="page-footer"><strong>Xopan.</strong><span>Grounded in observations. Guided by you.</span><span>Nuevo León · NASA Space Apps 2026</span></footer>
     </main>
   </>
 }

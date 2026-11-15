@@ -33,8 +33,8 @@ export default function RootZoneMoisture({ location, year }) {
     </summary>
     <div className="stat-body">
       <p className="stat-read">Each bar is one week. Taller and bluer means more water in the top meter of soil.</p>
-      <div className="big-bars" aria-hidden="true">
-        {series.weeks.map(({ date, mean }) => <span key={date} title={`${date}: ${percent(mean)}`}
+      <div className="big-bars" key={year} role="group" aria-label={`Weekly soil moisture in ${year}`}>
+        {series.weeks.map(({ date, mean }) => <span key={date} tabIndex={0} role="img" aria-label={`${date}: ${percent(mean)}`} data-tooltip={`${date} · ${percent(mean)}`}
           style={{ height: `${mean / ceiling * 100}%`, background: moistureColor(mean / ceiling) }} />)}
       </div>
       <div className="big-axis" aria-hidden="true"><span>Jan</span><span>Dec</span></div>
