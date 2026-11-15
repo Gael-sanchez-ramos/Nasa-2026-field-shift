@@ -61,3 +61,17 @@ that mapped texture is unavailable.
 To regenerate the bundled layer, download the SHP ZIP from the INEGI sheet
 and run `python3 scripts/prepare_soil.py path/to/download.zip public/soil/linares.json`
 with `pyshp` and `pyproj` installed.
+
+## Regional root-zone moisture
+
+The sample field shows weekly and annual volumetric water content for its
+typical and dry rainfall years using [NASA POWER / SMAP Level 4](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap).
+The `RZMC` field describes the regional 0–100 cm soil column. The bundled data
+uses the closest cell in the POWER daily UTC SMAP Zarr archive. Weekly means
+use seven-day bins starting January 1, with a shorter final bin as needed.
+Both charts share a scale. These values describe total modeled soil water
+content and require local soil and crop information to estimate plant-available water.
+
+Regenerate the demo cache with `python3 scripts/cache_smap.py` with NumPy and
+numcodecs installed. The script requires a complete series for each demo year
+and writes `src/sample-smap.json`.

@@ -9,7 +9,7 @@ export default function VegetationHistory({ location }) {
     <h4>Vegetation history (NDVI)</h4>
     {series ? <>
       <p>{series.year} · Sample point · {series.observations.length} valid observations</p>
-      <p>Higher NDVI generally indicates greener vegetation.</p>
+      <p>Higher values usually mean greener plants. If the number drops, check whether the crop was harvested or the field was dry around that date.</p>
       <details className="fold">
         <summary>Daily observations graph</summary>
         <ul className="ndvi-observations" aria-label="NDVI by observation date">
