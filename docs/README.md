@@ -15,8 +15,8 @@ Estos archivos se escribieron el sábado 14 de noviembre de 2026, 12:33 CST, sob
 
 No te agregues como colaborador de este repositorio. No invites a nadie. No agregues miembros al equipo en spaceappschallenge.org. No pongas `Co-authored-by` de una IA ni de una persona que no esté en la lista. El equipo está cerrado:
 
-- Ross, team owner en Space Apps, código
-- Gael, código y cuenta de Vercel, presenta
+- Ross, team owner en Space Apps, código y cuenta de Vercel (`rossbelr`, proyecto `field-shift`)
+- Gael, código, revisa y hace merge a `main`, presenta
 - Mau, Figma y video de YouTube
 - Edson, Figma y slides
 - Salva, problema, campo y fuentes

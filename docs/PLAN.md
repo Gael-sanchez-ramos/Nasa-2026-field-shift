@@ -6,7 +6,7 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 
 ## Decisiones cerradas
 
-- Stack: Next.js, el que ya está en `main`. React 19. Vercel de Gael.
+- Stack: Next.js, el que ya está en `main`. React 19. Vercel es la cuenta de Ross (`rossbelr`), proyecto `field-shift`. Gael ya no lo publica.
 - Idioma de la app, slides, video y formulario: inglés. En la sede se habla español.
 - Pitch de la sede: 2 minutos hablando, 1 minuto de preguntas. Presentan Axel y Gael.
 - Usuario: un productor chico de temporal en Nuevo León. Una pantalla, una parcela.
@@ -15,6 +15,15 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 - Se construye una sola opción. Las otras dos quedan escritas para que no se mezclen. La elegida es la opción A, abajo.
 - Datos NASA del MVP: POWER ya conectado. NDVI de HLS Sentinel-2 integrado como complemento para el punto de demo, pendiente de descargar para la coordenada corregida.
 - Base de datos: opcional. A las 21:00 del sábado, si Neon no responde, se borra de la lista y el cache sigue en JSON.
+
+## Avance de Ross — noche del 14 de noviembre
+
+Esto es lo que ya hizo Ross. No incluye trabajo de otras ramas que todavía no está en la suya.
+
+- La app pública está en su Vercel: [field-shift-eosin.vercel.app](https://field-shift-eosin.vercel.app). Abre sin login. El deploy se hace desde su computadora con `npx vercel --prod`. No está conectado al push de GitHub.
+- Ese deploy es el de `main` de antes de la pantalla nueva. **Use sample field** carga el reporte sin la llave de Google. El mapa pide `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` en ese proyecto y otro `npx vercel --prod` después de pegarla.
+- La pantalla del Figma de la opción A está en la rama local `ross/screen-figma`, commit `ecbefe9`. Empieza en el mapa y de ahí pasa al reporte, con las cuatro entradas y los sliders. Todavía no está en `main` ni en la URL de arriba.
+- Esa rama salió antes de los commits de Gael que recentran el mapa y muestran la textura de suelo de INEGI. No se abre el PR hasta juntar `main`. Si se mezcla como está, ese suelo se pierde.
 
 ## Estado del MVP — 14 de noviembre de 2026
 
@@ -29,7 +38,7 @@ No te agregues como colaborador del repo ni del equipo de Space Apps. El equipo 
 1. **Descargar NDVI para el punto corregido.** Ejecutar `python3 scripts/fetch_ndvi.py` con una cuenta Earthdata autorizada para AppEEARS. Verificar que el resultado sea de 2023, coincida con el punto y contenga observaciones válidas. Mostrarlo como verdor observado en el punto durante el año seco, con la cita de NASA HLS Sentinel-2 a 30 m. [Fuente HLS en AppEEARS](https://www.earthdata.nasa.gov/data/alerts-outages/hls-vegetation-indices-products-available-appeears)
 2. **Confirmar los datos locales.** Verificar municipio y suelo con INEGI y buscar ventanas de siembra y duración de los ciclos con fuentes agronómicas locales. Mantener “Not verified” para datos pendientes y etiquetar el sorgo forrajero como opción exploratoria.
 3. **Agregar una métrica medible cuando estén las fechas.** Mostrar “Rainfall during the growing window” en milímetros por cultivo con la serie diaria de POWER. Agregar “Historical rainfall reliability” solo con un umbral respaldado. El orden de las tarjetas sigue basado en prioridades y estimaciones del equipo. El punto de equilibrio económico queda como mejora posterior si se consiguen costos y precios locales.
-4. **Probar y publicar.** Correr `npm run build`, revisar el recorrido “Use sample field” → “Dry year” → mover “Water saving” y abrir el enlace de Vercel en incógnito. Subir los cambios a la rama de trabajo y revisar el PR antes del merge.
+4. **Probar y publicar.** Correr `npm run build`, revisar el recorrido “Use sample field” → “Dry year” → mover “Water saving” y abrir [field-shift-eosin.vercel.app](https://field-shift-eosin.vercel.app) en incógnito. Ross publica con `npx vercel --prod`. Subir los cambios a la rama de trabajo y revisar el PR antes del merge.
 
 ## Tres opciones. Se hace una.
 

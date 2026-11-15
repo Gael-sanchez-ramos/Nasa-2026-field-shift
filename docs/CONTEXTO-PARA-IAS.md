@@ -43,7 +43,7 @@ El dato NASA del MVP es el que ya está conectado: [NASA POWER Daily Point API](
 - La sede pide 2 minutos de exposición y 1 minuto de preguntas. El video de entrega global es otra cosa: máximo 30 segundos, o un deck de máximo 7 slides. Pasarse de ese límite saca al equipo del jueceo global. Guía del 13 de noviembre de 2026: [Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/).
 - Usuario del MVP: un productor chico. La vista para cooperativa o empresa queda como trabajo futuro. El ganado se menciona como contexto (menos lluvia, menos forraje). No hay módulo ganadero.
 - Nombre del proyecto: Field Shift. No lo renombres esta noche. Tagline en inglés: "Compare three rotations against your field's dry year."
-- Vercel es la cuenta de Gael. El link que ven los jueces es el de la app, público, sin login.
+- Vercel es la cuenta de Ross, usuario `rossbelr`, proyecto `field-shift`. La URL pública actual es https://field-shift-eosin.vercel.app. Ross publica con `npx vercel --prod`. Gael ya no usa su cuenta para este proyecto. El link que ven los jueces es ese, público y sin login.
 - Postgres no bloquea el demo. Si a las 21:00 del sábado Neon no está conectado, el cache se queda en JSON dentro del repo.
 - No hay cuenta de NASA Earthdata. Sin esa cuenta no se promete SMAP, MODIS ni IMERG dentro del producto.
 
@@ -51,9 +51,9 @@ El dato NASA del MVP es el que ya está conectado: [NASA POWER Daily Point API](
 
 Lee `src/app/page.jsx`, `src/App.jsx`, `src/climate.js` y `src/sample.json` antes de editar.
 
-- Ross es dueño de la fórmula y de los datos: `src/score.js`, `src/crops.js` y el JSON de cache.
-- Gael es dueño de la pantalla, el mapa y el deploy: `src/App.jsx`, `src/FieldMap.jsx` y Vercel.
-- No editen el mismo archivo a la vez. Gael hace merge a `main`.
+- Ross es dueño de la fórmula y de los datos: `src/score.js`, `src/crops.js` y el JSON de cache. Esta noche también está pasando el Figma a la app en la rama `ross/screen-figma`.
+- Gael revisa y hace merge a `main`. No publiques en la Vercel de Gael.
+- No editen `src/App.jsx` al mismo tiempo. La rama de la pantalla nueva tiene que juntar `main` antes del PR, porque `main` ya trae el suelo de INEGI y el recentrado del mapa.
 - Rama por persona: `ross/score`, `gael/screen`, `salva/fuentes`.
 - La interfaz queda en una sola página. No hagas un sitio de marketing.
 - El botón "Use sample field" es el camino del pitch. Dibujar el polígono en Google Maps no se usa en los 2 minutos.
