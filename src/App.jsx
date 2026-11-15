@@ -105,10 +105,12 @@ export default function App() {
   if (view === 'map') return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
     <main>
-      <h1>Start by outlining your field.</h1>
-      <p className="intro">Find your field on the map and tap its corners. Close the outline, then select Analyze field.</p>
+      <h1>{report && !drawing ? 'Explore your field' : 'Start by outlining your field.'}</h1>
+      <p className="intro">{report && !drawing
+        ? 'Open Map view to choose a layer. Select View report to return to your crop comparison.'
+        : 'Find your field on the map and tap its corners. Close the outline, then select Analyze field.'}</p>
       <section className="panel map-panel" aria-label="Field map">
-        <FieldMap points={points} drawing={drawing} center={sample.location} recenterRequest={sampleSelections}
+        <FieldMap points={points} drawing={drawing} center={report?.location ?? sample.location} recenterRequest={sampleSelections}
           overlay={overlay} onPoint={point => setPoints(previous => [...previous, point])}>
           <details className="layer-panel">
             <summary>Map view <small>· {mapLayers.find(([key]) => key === layer)?.[1]}</small></summary>
@@ -172,9 +174,8 @@ export default function App() {
             </div>
             <FieldMap compact points={points} drawing={false} center={report.location} recenterRequest={sampleSelections}
               onPoint={point => setPoints(previous => [...previous, point])} />
-            <div className="controls pad">
-              <button onClick={useSample}>Use sample field</button>
-              <button onClick={() => { setView('map'); setDrawing(true) }}>Edit outline</button>
+            <div className="controls pad field-report-controls">
+              <button className="primary" onClick={() => setView('map')}>View map</button>
             </div>
           </section>
           <section className="panel pad" aria-labelledby="nasa-title">

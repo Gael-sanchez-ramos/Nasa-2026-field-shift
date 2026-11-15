@@ -55,6 +55,7 @@ dd{margin:4px 0 0;font-weight:700}
 .outline-legend span{display:inline-block;width:16px;height:8px;border:2px solid #586915;background:#d4f566;margin-right:3px}
 .map-controls{align-items:center}
 .map-controls .spacer{flex:1}
+.field-report-controls .primary{margin-inline-start:auto}
 .controls-note{color:#4d6256}
 .preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .report-preview{margin-top:16px}
