@@ -52,6 +52,9 @@ dd{margin:4px 0 0;font-weight:700}
 .legend-ticks{display:flex;list-style:none;margin:4px 0 0;padding:0;text-align:center;font-variant-numeric:tabular-nums}
 .legend-ticks li{flex:1;white-space:nowrap}
 .legend-ticks li span{display:block;height:8px}
+.legend-note{margin:6px 0 0}
+.legend-source{display:inline-block;margin:6px 8px 0 0}
+.legend-zoom{min-height:32px;margin-top:5px;padding:4px 8px;font-size:inherit}
 .outline-legend span{display:inline-block;width:16px;height:8px;border:2px solid #586915;background:#d4f566;margin-right:3px}
 .map-controls{align-items:center}
 .map-controls .spacer{flex:1}
