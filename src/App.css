@@ -118,6 +118,11 @@ details.section-fold .fold-body{padding:0 20px 18px}
 .ndvi-observations { max-height: 16rem; overflow: auto; padding: 0; list-style: none; }
 .ndvi-observations li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .ndvi-observations meter { width: 100%; }
+.ndvi-timeline { margin-top: 12px; }
+.ndvi-plot { position: relative; height: 180px; border-bottom: 1px solid #c5cec0; }
+.ndvi-plot > span { position: absolute; bottom: 0; width: clamp(2px, .8%, 5px); transform: translateX(-50%); border-radius: 2px 2px 0 0; }
+.ndvi-ticks { position: relative; height: 1.5em; margin-top: 6px; color: #203d30; }
+.ndvi-ticks > span { position: absolute; }
 
 .moisture-history { margin-block: 16px; }
 .moisture-history figure { margin: 12px 0; }

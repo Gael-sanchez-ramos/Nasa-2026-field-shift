@@ -21,26 +21,20 @@ const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
 const cropAdvice = {
-  'grain-sorghum': [
-    'Plant grain sorghum one more time.',
-    'You keep selling grain.',
-    'The soil gets less of a break than if you add beans.',
-  ],
-  'sorghum-bean': [
-    'Plant sorghum, then dry beans the next season.',
-    'The beans are there to help the soil.',
-    'Selling grain still brings in more money.',
-  ],
-  'forage-sorghum': [
-    'Plant sorghum, then sorghum cut as animal feed.',
-    'This is the option that needs less water.',
-    'It only makes sense if someone nearby will buy that feed.',
-  ],
+  'grain-sorghum': 'Keep grain sorghum for the next season. Check local grain prices and your costs.',
+  'sorghum-bean': 'Try dry beans after sorghum. Check local planting dates and how well water drains.',
+  'forage-sorghum': 'Follow grain sorghum with sorghum for animal feed. Check local water needs and who would buy the feed.',
+}
+const irrigationAdvice = {
+  Limited: 'Check when irrigation is available and how much water you can use during the growing season.',
+  Available: 'Check whether your irrigation supply can cover each crop’s growing season.',
+  Rainfed: 'Check rainfall and dry periods during each crop’s local growing season.',
+  Unknown: 'Confirm whether you can irrigate before comparing the options.',
 }
 const reportSections = ['NASA observations', 'Local soil', 'Crop characteristics', 'Farmer priorities']
 const mapLayers = [
   ['satellite', 'Satellite', 'Natural color'],
-  ['ndvi', 'Vegetation (NDVI)', 'Greenness, from near-infrared'],
+  ['ndvi', 'Crop health', 'NDVI · Plant greenness only'],
   ['imerg', 'Rainfall', 'NASA IMERG · Nuevo León area'],
   ['temp', 'Temperature (global)', 'MERRA-2 · Global scale'],
   ['regional-temp', 'Temperature (regional)', 'MERRA-2 · Nuevo León scale'],
@@ -287,21 +281,26 @@ export default function App() {
             <div className="section-head">
               <h2 id="crop-title">Rotation suggestions</h2>
             </div>
-            <div className="crops">{comparison.ranked.map((crop, index) => <article key={crop.name} className={index === 0 ? 'leader' : undefined}>
-              <div className="crop-head">
-                <span className="rank" aria-label={`Rank ${index + 1}`}>{index + 1}</span>
-                <span className="badge">{crop.isCurrent ? 'Current sequence' : crop.forage ? 'Forage' : 'Exploratory'}</span>
-              </div>
-              <h3>{crop.name}</h3>
-              {cropAdvice[crop.id].map(line => <p key={line}>{line}</p>)}
-              {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional study, Table 6</a>}
-            </article>)}</div>
-            <p className="decision-note">It does not tell anyone what to plant. A local advisor still has to review the choice.</p>
+            <p>Ranked by your priorities and team estimates. Climate and soil data help you compare risks; they do not change this order.</p>
+            <div className="crops">{comparison.ranked.map(crop => {
+              const rank = comparison.ranked.findIndex(option => Math.abs(option.score - crop.score) < 1e-10) + 1
+              return <article key={crop.id} className={rank === 1 ? 'leader' : undefined}>
+                <div className="crop-head">
+                  <span className="rank" aria-label={`Rank ${rank}`}>{rank}</span>
+                  <span className="badge">{crop.isCurrent ? 'Current sequence' : crop.forage ? 'Forage' : 'Exploratory'}</span>
+                </div>
+                <h3>{crop.name}</h3>
+                <p>{cropAdvice[crop.id]}</p>
+                {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional study, Table 6</a>}
+              </article>
+            })}</div>
+            <p className="decision-note" aria-live="polite">{irrigationAdvice[irrigation]}</p>
+            <p>Review planting dates and field conditions with a local advisor.</p>
           </section>
         </div>
       </div>
-      <section className="evidence" aria-labelledby="why-title">
-        <h2 id="why-title">Why these options?</h2>
+      <section className="evidence" aria-labelledby="field-context-title">
+        <h2 id="field-context-title">What to check for your field</h2>
         <div className="dash-grid">
           {report.isSample && climate && <RootZoneMoisture location={report.location} year={climate.year} />}
           {report.isSample && <VegetationHistory location={report.location} />}
@@ -312,7 +311,7 @@ export default function App() {
               <li>No yield, price, or lab soil test.</li>
               <li>The municipality of this {report.isSample ? 'demo point' : 'field'} is not verified.</li>
               <li>The rain number covers a wide area, not a gauge in the field.</li>
-              <li>Greenness is not the crop name.</li>
+              <li>NDVI shows plant greenness. It cannot identify the crop or diagnose its health.</li>
             </ul>
           </details>
         </div>

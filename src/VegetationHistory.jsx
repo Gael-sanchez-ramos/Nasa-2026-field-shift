@@ -12,35 +12,51 @@ function greenness(value) {
 
 export default function VegetationHistory({ location }) {
   const series = cache?.location.lat === location.lat && cache?.location.lng === location.lng ? cache : null
-  if (!series) return <details className="stat-card panel">
+  if (!series?.observations.length) return <details className="stat-card panel">
     <summary>
-      <span className="stat-kicker">Greenness at the point</span>
+      <span className="stat-kicker">Crop health</span>
       <span className="stat-poster leaf"><strong>No record</strong><small>Greenness for this point is not saved yet.</small></span>
     </summary>
   </details>
 
   const average = series.observations.reduce((sum, item) => sum + item.ndvi, 0) / series.observations.length
-  const lowest = Math.min(...series.observations.map(item => item.ndvi))
-  const highest = Math.max(...series.observations.map(item => item.ndvi))
-  const span = Math.max(0.05, highest - lowest)
-  const cover = average >= 0.6 ? 'Mostly green' : average >= 0.3 ? 'Mixed cover' : 'Mostly bare'
+  const yearStart = Date.UTC(series.year, 0, 1)
+  const yearEnd = Date.UTC(series.year + 1, 0, 1)
+  const position = time => (time - yearStart) / (yearEnd - yearStart) * 100
+  const ticks = [[0, 'Jan'], [3, 'Apr'], [6, 'Jul'], [9, 'Oct']]
 
   return <details className="stat-card panel">
     <summary>
-      <span className="stat-kicker">Greenness at the point</span>
+      <span className="stat-kicker">Crop health</span>
       <span className="stat-poster leaf">
-        <strong>{cover}</strong>
-        <small>{series.year} · greener means more plant cover</small>
+        <strong>{average.toFixed(2)}</strong>
+        <small>Average observed NDVI · {series.year}</small>
       </span>
     </summary>
     <div className="stat-body">
-      <p className="stat-read">Each mark is one satellite look. Brown is sparse cover. Green is a full canopy.</p>
-      <div className="big-bars" aria-label="Greenness through the year">
-        {series.observations.map(({ date, ndvi }) => <span key={date} title={`${date}: ${ndvi.toFixed(2)}`}
-          style={{ height: `${8 + (ndvi - lowest) / span * 92}%`, background: greenness(ndvi) }} />)}
+      <p className="stat-read">NDVI estimates plant greenness. Each bar marks a satellite observation on its actual date. Gaps mean no valid observations.</p>
+      <div className="ndvi-timeline" aria-hidden="true">
+        <div className="ndvi-plot">
+          {series.observations.map(({ date, ndvi }) => <span key={date} title={`${date}: ${ndvi.toFixed(2)}`}
+            style={{ left: `${position(Date.parse(date))}%`, height: `${(ndvi + 1) * 50}%`, background: greenness(ndvi) }} />)}
+        </div>
+        <div className="ndvi-ticks">
+          {ticks.map(([month, label]) => <span key={label}
+            style={{ left: `${position(Date.UTC(series.year, month, 1))}%` }}>{label}</span>)}
+        </div>
       </div>
-      <div className="big-axis" aria-hidden="true"><span>Jan</span><span>Dec</span></div>
-      <p className="stat-source"><a href={source}>NASA HLS Sentinel-2</a> · 30 m at the point. Greenness, not the crop name or a yield.</p>
+      <p>NDVI scale: −1 to 1. The bars start at −1.</p>
+      <details className="fold">
+        <summary>See observations by date</summary>
+        <ul className="ndvi-observations">
+          {series.observations.map(({ date, ndvi }) => <li key={date}>
+            <time dateTime={date}>{date}</time>
+            <meter min={-1} max={1} value={ndvi} aria-label={`NDVI on ${date}`} />
+            <span>{ndvi.toFixed(2)}</span>
+          </li>)}
+        </ul>
+      </details>
+      <p className="stat-source"><a href={source}>NASA HLS Sentinel-2</a> · 30 m at the point. NDVI alone cannot diagnose crop health or tell what is growing.</p>
     </div>
   </details>
 }
