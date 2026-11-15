@@ -1,7 +1,7 @@
 // INEGI Edaphology Series II, Linares G14-11, 1:250,000.
 // Interpretation guide: https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/702825231606.pdf
 export const soilSource = 'https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=702825236120'
-const textures = { 1: 'Coarse', 2: 'Medium', 3: 'Fine' }
+const textures = { 1: 'Coarse', 2: 'Medium', 3: 'Clayey soil' }
 
 export function findMappedSoil(polygons, { lat, lng }) {
   for (const [[west, south, east, north], unit, texture, rings] of polygons) {

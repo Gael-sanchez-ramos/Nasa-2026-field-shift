@@ -33,7 +33,7 @@ export default function LocalSoil({ location }) {
     : soil ? soil.texture : 'Not on this sheet'
   const caption = !location ? 'Draw a field or open the sample to see the mapped soil.'
     : !polygons ? (failed ? 'The soil map could not be loaded.' : 'Reading the soil map.')
-    : soil ? 'Mapped soil, top 30 cm' : 'No mapped texture at this point.'
+    : soil ? 'Mapped topsoil · 0–30 cm' : 'No mapped texture at this point.'
 
   return <details className="stat-card panel">
     <summary>
