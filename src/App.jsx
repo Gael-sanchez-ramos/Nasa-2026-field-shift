@@ -34,9 +34,12 @@ export default function App() {
     setMessage('')
   }
 
+  const [sampleSelections, setSampleSelections] = useState(0)
+
   function useSample() {
     resetReport()
     setPoints(sampleBoundary)
+    setSampleSelections(previous => previous + 1)
     setDrawing(false)
     setReport({ ...sample, isSample: true })
   }
@@ -74,7 +77,7 @@ export default function App() {
         <section className="panel map-panel" aria-labelledby="field-title">
           <div className="pad"><h2 id="field-title">Your field</h2>
             <p>{drawing ? 'Tap the corners of your field, then finish drawing.' : 'Find your field on the satellite map.'}</p></div>
-          <FieldMap points={points} drawing={drawing} center={sample.location}
+          <FieldMap points={points} drawing={drawing} center={sample.location} recenterRequest={sampleSelections}
             onPoint={point => setPoints(previous => [...previous, point])} />
           <div className="controls pad">
             {drawing ? <>
