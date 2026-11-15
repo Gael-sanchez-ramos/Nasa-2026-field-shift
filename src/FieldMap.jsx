@@ -18,7 +18,7 @@ function loadMaps() {
   return mapsPromise
 }
 
-export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, tint, compact, children }) {
+export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, overlay, compact, children }) {
   const element = useRef(null)
   const map = useRef(null)
   const [status, setStatus] = useState(key ? 'loading' : 'unconfigured')
@@ -48,6 +48,29 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     map.current.setZoom(15)
   }, [center, recenterRequest, status])
 
+  // NASA GIBS raster tiles over the satellite base map. GIBS needs no key.
+  // Beyond the layer's own zoom level we reuse its coarsest valid tile.
+  const overlayId = overlay?.id
+  const overlayDate = overlay?.date
+  const overlayLevel = overlay?.level
+  useEffect(() => {
+    if (status !== 'ready' || !overlayId) return
+    const maps = window.google.maps
+    const type = new maps.ImageMapType({
+      getTileUrl: (coord, zoom) => {
+        const z = Math.min(zoom, overlayLevel)
+        const scale = 2 ** (zoom - z)
+        const x = Math.floor(coord.x / scale)
+        const y = Math.floor(coord.y / scale)
+        return `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${overlayId}/default/${overlayDate}/GoogleMapsCompatible_Level${overlayLevel}/${z}/${y}/${x}.png`
+      },
+      tileSize: new maps.Size(256, 256),
+      opacity: 0.55, name: overlayId, credit: 'NASA GIBS',
+    })
+    map.current.overlayMapTypes.push(type)
+    return () => map.current.overlayMapTypes.removeAt(map.current.overlayMapTypes.getLength() - 1)
+  }, [overlayId, overlayDate, overlayLevel, status])
+
   useEffect(() => {
     if (status !== 'ready' || !drawing) return
     const listener = map.current.addListener('click', event => onPoint(event.latLng.toJSON()))
@@ -59,13 +82,12 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     // Google Maps shapes: https://developers.google.com/maps/documentation/javascript/shapes
     const { Polygon, Polyline } = window.google.maps
     const Shape = drawing ? Polyline : Polygon
-    const color = tint?.color ?? '#d4f566'
     const shape = new Shape({
       map: map.current, [drawing ? 'path' : 'paths']: points, clickable: false,
-      strokeColor: color, strokeWeight: 3, fillColor: color, fillOpacity: tint?.opacity ?? 0.25,
+      strokeColor: '#d4f566', strokeWeight: 3, fillColor: '#d4f566', fillOpacity: 0.25,
     })
     return () => shape.setMap(null)
-  }, [points, status, drawing, tint])
+  }, [points, status, drawing])
 
   return <div className={compact ? 'map map-small' : 'map'}>
     <div className="map-canvas" ref={element} />
@@ -74,7 +96,7 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
       <strong>{status === 'loading' ? 'Loading satellite map…' : 'Satellite map unavailable'}</strong>
       <span>{compact ? 'The field outline is illustrative.' : 'Explore the climate report with the sample field.'}</span>
     </div>}
-    {status === 'ready' && tint && <div className="map-legend">{tint.label}</div>}
+    {status === 'ready' && overlay?.label && <div className="map-legend">{overlay.label}</div>}
     {status === 'ready' && children}
   </div>
 }
