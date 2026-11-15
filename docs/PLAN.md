@@ -124,6 +124,21 @@ Revisiones de la misma opción:
 - [ ] Si a las 10:30 el video no reproduce en el teléfono de Ross, el enlace de demo de la entrega pasa al deck de 7 slides. No se entregan los dos.
 - [ ] Formulario de Space Apps guardado. Ross aprieta "Submit for Judging" en cuanto el enlace de la app y el enlace del demo abren en incógnito. Hora objetivo: 11:15. Límite interno: 11:40.
 
+## Capas NASA GIBS en el mapa — decisión del sábado 21:50
+
+Salió después del plan original. Entra como mejora, no como requisito: el pitch sigue sin usar el mapa en vivo y el freeze de las 00:00 no se mueve.
+
+Qué se hace: las vistas del panel "Map view" dejan de teñir solo el polígono de la parcela y pasan a mostrar teselas reales de [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/access-basics/) montadas sobre el satélite de Google. GIBS es el servicio que alimenta NASA Worldview: no pide llave ni cuenta Earthdata, y las teselas se piden por HTTPS con la plantilla `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{capa}/default/{fecha}/GoogleMapsCompatible_Level{z}/{z}/{y}/{x}.png`. No se agregan librerías a `package.json`: Google Maps ya acepta capas de teselas externas.
+
+- Vegetation (NDVI): MODIS NDVI de 8 días, con la fecha fijada en 2023 para que coincida con el año seco del cache. Es MODIS a 250 m; la serie de 30 m del reporte sigue siendo HLS Sentinel-2. Se etiquetan por separado, no se mezclan.
+- Temperature: temperatura de superficie (MODIS LST o MERRA-2), no de aire. La etiqueta en pantalla lo dice.
+- Rainfall: IMERG en GIBS es tasa de lluvia por media hora; en un año seco el mapa sale casi vacío y parece roto. Solo entra si se encuentra una capa acumulada que se vea bien. Si no, la opción queda deshabilitada con una nota honesta.
+- Soil: sigue deshabilitada. La textura mapeada de INEGI vive en la tarjeta del reporte.
+
+Cada capa muestra el nombre del producto NASA y la fecha junto al mapa. Los datos GIBS son CC0 con crédito a NASA GIBS/ESDIS; si las capas entran al build, esa línea se agrega a [FUENTES.md](FUENTES.md) y al campo NASA Data de la entrega.
+
+Límite duro: a las 22:45, si NDVI y temperatura no se ven bien, se regresa a la versión con el tinte del polígono (ya está en Vercel) y no se toca más esta noche.
+
 ## Horario
 
 Comer y pausar está dentro del horario. A las 00:00 se deja de escribir funcionalidad. El domingo a las 08:00 ya están en la UDEM.
