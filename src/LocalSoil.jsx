@@ -28,21 +28,28 @@ export default function LocalSoil({ location }) {
 
   const soil = location && polygons ? findMappedSoil(polygons, location) : null
 
-  return <section className="panel pad" aria-labelledby="soil-title">
-    <div className="section-head">
-      <h3 id="soil-title">Local soil</h3>
-      {(!soil) && <span className="badge badge-warn">Not verified</span>}
-    </div>
-    <div aria-live="polite">
-      {!location && <p>Finish drawing a field or load the sample field to check the soil map.</p>}
-      {location && !polygons && <p>{failed ? 'The soil map could not be loaded.' : 'Checking the soil map…'}</p>}
-      {location && polygons && !soil && <p>No mapped soil texture at this point in the Linares sheet.</p>}
+  const headline = !location ? 'No field yet'
+    : !polygons ? (failed ? 'Map unavailable' : 'Checking…')
+    : soil ? soil.texture : 'Not on this sheet'
+  const caption = !location ? 'Draw a field or open the sample to see the mapped soil.'
+    : !polygons ? (failed ? 'The soil map could not be loaded.' : 'Reading the soil map.')
+    : soil ? 'Mapped soil, top 30 cm' : 'No mapped texture at this point.'
+
+  return <details className="stat-card panel">
+    <summary>
+      <span className="stat-kicker" id="soil-title">Mapped soil</span>
+      <span className="stat-poster soil">
+        <strong>{headline}</strong>
+        <small>{caption}</small>
+      </span>
+    </summary>
+    <div className="stat-body" aria-live="polite">
       {soil && <>
-        <p>Mapped surface texture: <strong>{soil.texture}</strong></p>
-        <p>Soil map unit: <strong>{soil.unit}</strong></p>
-        <p>The map describes the top 30 cm of soil. Check how well water drains in your field before choosing a crop.</p>
+        <p className="stat-callout">{soil.unit}</p>
+        <p className="stat-read">This is the map unit for the top 30 cm. It is not a lab test of your field.</p>
       </>}
+      {!soil && <p className="stat-read">{caption}</p>}
+      <p className="stat-source"><a href={soilSource}>INEGI soil map</a> · Linares sheet G14-11 · 1:250,000</p>
     </div>
-    <a className="source" href={soilSource}>INEGI soil map · Linares G14-11 · 1:250,000</a>
-  </section>
+  </details>
 }

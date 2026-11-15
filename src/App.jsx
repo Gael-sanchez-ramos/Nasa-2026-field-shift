@@ -20,15 +20,21 @@ const sampleBoundary = [
 const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
-const cropChecks = {
-  'grain-sorghum': 'Check local sorghum prices and what you spent last season.',
-  'sorghum-bean': 'Check when to plant beans and how well water drains in your field.',
-  'forage-sorghum': 'Check who would buy the forage and how much water the local variety needs.',
+const cropAdvice = {
+  'grain-sorghum': 'Keep grain sorghum for the next season. Check local grain prices and your costs.',
+  'sorghum-bean': 'Try dry beans after sorghum. Check local planting dates and how well water drains.',
+  'forage-sorghum': 'Follow grain sorghum with sorghum for animal feed. Check local water needs and who would buy the feed.',
+}
+const irrigationAdvice = {
+  Limited: 'Check when irrigation is available and how much water you can use during the growing season.',
+  Available: 'Check whether your irrigation supply can cover each crop’s growing season.',
+  Rainfed: 'Check rainfall and dry periods during each crop’s local growing season.',
+  Unknown: 'Confirm whether you can irrigate before comparing the options.',
 }
 const reportSections = ['NASA observations', 'Local soil', 'Crop characteristics', 'Farmer priorities']
 const mapLayers = [
   ['satellite', 'Satellite', 'Natural color'],
-  ['ndvi', 'Vegetation (NDVI)', 'Greenness, from near-infrared'],
+  ['ndvi', 'Crop health', 'NDVI · Plant greenness only'],
   ['imerg', 'Rainfall', 'NASA IMERG · Nuevo León area'],
   ['temp', 'Temperature (global)', 'MERRA-2 · Global scale'],
   ['regional-temp', 'Temperature (regional)', 'MERRA-2 · Nuevo León scale'],
@@ -94,8 +100,7 @@ export default function App() {
   const climate = report?.[scenario]
   const rainGap = report?.typical && report?.dry ? report.typical.rain - report.dry.rain : null
   const comparison = rankRotations(weights, climate, scenario)
-  const leaders = comparison.ranked.filter(crop => Math.abs(crop.score - comparison.ranked[0].score) < 1e-10)
-  const topPriorities = priorities.filter(([key]) => comparison.weights[key] === Math.max(...Object.values(comparison.weights)))
+  const rainMax = Math.max(report?.typical?.rain ?? 0, report?.dry?.rain ?? 0)
 
   // GIBS tile overlays paint the whole map with real NASA rasters; no key or account needed.
   // POWER stays the source for the report numbers; the map layers are visual context.
@@ -196,7 +201,7 @@ export default function App() {
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
     <main>
       <h1>What could you plant after sorghum?</h1>
-      <p className="intro">Compare three options for your field. Move the sliders to see which option to explore first.</p>
+      <p className="intro">Move the sliders. The three options below change order.</p>
       <div className="workspace">
         <div className="col">
           <section className="panel" aria-labelledby="field-title">
@@ -210,43 +215,53 @@ export default function App() {
               <button className="primary" onClick={() => setView('map')}>View map</button>
             </div>
           </section>
-          <section className="panel pad" aria-labelledby="nasa-title">
-            <div className="section-head">
-              <h3 id="nasa-title">NASA observations</h3>
-              <span className="badge badge-nasa">NASA data</span>
+          {climate ? <details className="stat-card panel">
+            <summary>
+              <span className="stat-kicker" id="climate-title">Rain and heat</span>
+              <span className="climate-tiles">
+                <span className="stat-poster rain">
+                  <strong>{climate.rain} mm</strong>
+                  <small>{scenario === 'dry' ? `Rain in ${climate.year}, the second-driest year` : `Rain in ${climate.year}, a typical year`}</small>
+                </span>
+                <span className="stat-poster hot">
+                  <strong>{climate.high == null ? '—' : `${climate.high.toFixed(1)}°C`}</strong>
+                  <small>Hottest day</small>
+                </span>
+                <span className="stat-poster cold">
+                  <strong>{climate.low == null ? '—' : `${climate.low.toFixed(1)}°C`}</strong>
+                  <small>Coldest day</small>
+                </span>
+              </span>
+            </summary>
+            <div className="stat-body">
+              <div className="year-choices" role="group" aria-label="Historical scenario">
+                {[['typical', 'Typical year', ''], ['dry', 'Dry year', 'second-driest']].map(([key, label, note]) => {
+                  const row = report[key]
+                  if (!row) return null
+                  return <button key={key} type="button" className="year-choice" aria-pressed={scenario === key}
+                    onClick={() => setScenario(key)}>
+                    <span className="year-name">{label}<b>{row.year}{note ? ` · ${note}` : ''}</b></span>
+                    <span className="year-track"><i style={{ width: `${rainMax ? row.rain / rainMax * 100 : 0}%` }} /></span>
+                    <strong>{row.rain} mm</strong>
+                  </button>
+                })}
+              </div>
+              {rainGap > 0 && <p className="stat-callout">{rainGap} mm less rain in the dry year</p>}
+              <p className="stat-source"><a href={nasaSource}>NASA POWER</a> · rain and temperature for a wide area, not a gauge in the field.</p>
             </div>
-            {climate ? <>
-              <div className="controls scenarios" aria-label="Historical scenario">
-                <button aria-pressed={scenario === 'typical'} onClick={() => setScenario('typical')}>Typical year</button>
-                <button aria-pressed={scenario === 'dry'} onClick={() => setScenario('dry')}>Dry year</button>
-              </div>
-              <div aria-live="polite">
-                <h4>{climate.year} regional climate</h4>
-                <p>{scenario === 'dry' ? 'Second-driest' : 'Closest to median rainfall'} complete year in this series, 2015–2024.</p>
-                {rainGap > 0 && <p>The dry year got <strong>{rainGap} mm less rain</strong> than the typical year. Check how much rain usually falls during your crop’s growing months.</p>}
-                <details className="fold">
-                  <summary>Statistics: {climate.rain} mm rain{climate.high != null && ` · high ${climate.high.toFixed(1)} °C`}{climate.low != null && ` · low ${climate.low.toFixed(1)} °C`}</summary>
-                  <dl className="metrics">
-                    <div><dt>Annual rainfall</dt><dd>{climate.rain} mm</dd></div>
-                    <div><dt>Highest temperature</dt><dd>{climate.high == null ? 'Unavailable' : climate.high.toFixed(1) + ' °C'}</dd></div>
-                    <div><dt>Lowest temperature</dt><dd>{climate.low == null ? 'Unavailable' : climate.low.toFixed(1) + ' °C'}</dd></div>
-                  </dl>
-                  <p className="source"><a href={nasaSource}>NASA POWER Daily API</a> · {report.count} complete rainfall years evaluated, 2015–2024 UTC. Regional cell, not a gauge on the field. Typical is closest to median annual rainfall. Dry is the second-driest year.</p>
-                </details>
-              </div>
-            </> : <p>Climate data for this field is pending.</p>}
-            {report.isSample && climate && <RootZoneMoisture location={report.location} year={climate.year} />}
-            {report.isSample && <VegetationHistory location={report.location} />}
-          </section>
-          <LocalSoil location={report?.isSample ? sample.location : drawing ? null : point} />
+          </details> : <details className="stat-card panel">
+            <summary>
+              <span className="stat-kicker">Rain and heat</span>
+              <span className="stat-poster rain"><strong>—</strong><small>Climate for this field is not loaded yet.</small></span>
+            </summary>
+          </details>}
         </div>
-        <div className="col">
+        <div className="col decision-col">
           <section className="panel pad" aria-labelledby="priorities-title">
             <div className="section-head">
-              <h3 id="priorities-title">Farmer priorities</h3>
+              <h2 id="priorities-title">Farmer priorities</h2>
               <span className="badge">You set these</span>
             </div>
-            <p>Set what matters most to you. The crop options below update as you move the sliders.</p>
             <div className="priority-inputs">
               {priorities.map(([key, label]) => <label key={key}>
                 <span>{label} <strong>{Math.round(comparison.weights[key] * 100)}%</strong></span>
@@ -255,60 +270,52 @@ export default function App() {
                 <span className="scale" aria-hidden="true"><span>Less</span><span>More</span></span>
               </label>)}
             </div>
+            {weights.income + weights.water + weights.soil === 0 && <p>All three sliders are at zero, so each priority gets equal weight.</p>}
             <label className="irrigation">Will you have water for irrigation?
               <select value={irrigation} onChange={event => setIrrigation(event.target.value)}>
                 <option value="Limited">Some irrigation water</option><option value="Available">I have irrigation water</option><option value="Rainfed">Rain only</option><option value="Unknown">I am not sure</option>
               </select>
             </label>
           </section>
-          <section className="panel pad" aria-labelledby="crop-title">
+          <section className="panel pad suggestions" aria-labelledby="crop-title">
             <div className="section-head">
-              <h3 id="crop-title">Rotation suggestions</h3>
-              <span className="badge">Team estimates, not a yield model</span>
+              <h2 id="crop-title">Rotation suggestions</h2>
             </div>
-            <p>The team rated each option from 1 to 5. Your sliders decide which ratings matter most in the order below.</p>
-            <div className="crops">{comparison.ranked.map((crop, index) => <article key={crop.name} className={index === 0 ? 'leader' : undefined}>
-              <div className="crop-head">
-                <span className="rank" aria-label={`Rank ${index + 1}`}>{index + 1}</span>
-                <span className="badge">{crop.isCurrent ? 'Current sequence' : crop.forage ? 'Scenario · Forage' : 'Exploratory'}</span>
-              </div>
-              <h4>{crop.name}</h4>
-              <p>{crop.summary}</p>
-              <dl className="ratings">
-                {priorities.map(([key, label]) => <div key={key}>
-                  <dt>{label}</dt>
-                  <dd aria-label={`${crop[key]} out of 5`}>{Array.from({ length: 5 }, (_, dot) =>
-                    <span key={dot} className={dot < crop[key] ? 'dot on' : 'dot'} aria-hidden="true" />)}</dd>
-                </div>)}
-              </dl>
-              {crop.bestFor.length > 0 && <p className="top-rating">Top rating: {crop.bestFor.map(key =>
-                key === 'water' ? 'water saving' : key === 'soil' ? 'soil health' : key).join(' and ')}</p>}
-              <p><strong>What to check:</strong> {cropChecks[crop.id]}</p>
-              {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional rotation study, Table 6</a>}
-            </article>)}</div>
-            <p>{irrigation === 'Rainfed' ? 'Check rainfall during the local growing window.' : 'Confirm available irrigation during each crop’s growing window.'} Review local planting dates with an advisor.</p>
-          </section>
-          <section className="panel pad accent" aria-labelledby="comparison-title">
-            <h3 id="comparison-title">How to read this comparison</h3>
-            <div aria-live="polite">
-              <p><strong>{leaders.length > 1 ? 'Tied for first' : 'Highest score'}:</strong> {leaders.map(crop => crop.name).join(' · ')}.</p>
-              <p>Most important to you: {topPriorities.map(([, label]) => label).join(', ')}. {weights.income + weights.water + weights.soil === 0 && 'All three sliders are at zero, so each priority gets equal weight. '}The ranking uses your sliders and the team’s crop ratings. It is not a yield forecast.</p>
-              {climate && <p>{climate.year}, {scenario === 'dry' ? 'second-driest year' : 'closest-to-median year'} in this cache: {climate.rain} mm{climate.high != null && ` and a daily maximum of ${climate.high.toFixed(2)} °C`}. <a href={nasaSource}>NASA POWER</a>, regional cell, not a field gauge. Use this history to check water and heat risks before choosing a crop.</p>}
-            </div>
-            <p>Before planting, confirm your soil type, local planting dates and water availability with a local advisor. Check local prices and costs if income is your priority.</p>
-          </section>
-          <section className="gaps" aria-labelledby="gaps-title">
-            <h3 id="gaps-title">Before you plant</h3>
-            <ul>
-              <li>The farmer’s yield, market price, or lab soil test. There is no yield model.</li>
-              <li>The municipality of this {report.isSample ? 'demo point' : 'field'}. It is not verified. The mapped soil texture is a regional INEGI estimate, not a lab test.</li>
-              <li>Rain on the field itself. NASA POWER is a regional cell, not a station on the field.</li>
-              <li>What grows at the point. NDVI shows greenness, not crop type or yield.</li>
-            </ul>
-            <p>It does not tell anyone what to plant. A local advisor still has to review the choice.</p>
+            <p>Ranked by your priorities and team estimates. Climate and soil data help you compare risks; they do not change this order.</p>
+            <div className="crops">{comparison.ranked.map(crop => {
+              const rank = comparison.ranked.findIndex(option => Math.abs(option.score - crop.score) < 1e-10) + 1
+              return <article key={crop.id} className={rank === 1 ? 'leader' : undefined}>
+                <div className="crop-head">
+                  <span className="rank" aria-label={`Rank ${rank}`}>{rank}</span>
+                  <span className="badge">{crop.isCurrent ? 'Current sequence' : crop.forage ? 'Forage' : 'Exploratory'}</span>
+                </div>
+                <h3>{crop.name}</h3>
+                <p>{cropAdvice[crop.id]}</p>
+                {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional study, Table 6</a>}
+              </article>
+            })}</div>
+            <p className="decision-note" aria-live="polite">{irrigationAdvice[irrigation]}</p>
+            <p>Review planting dates and field conditions with a local advisor.</p>
           </section>
         </div>
       </div>
+      <section className="evidence" aria-labelledby="field-context-title">
+        <h2 id="field-context-title">What to check for your field</h2>
+        <div className="dash-grid">
+          {report.isSample && climate && <RootZoneMoisture location={report.location} year={climate.year} />}
+          {report.isSample && <VegetationHistory location={report.location} />}
+          <LocalSoil location={report?.isSample ? sample.location : drawing ? null : point} />
+          <details className="gaps plain-fold">
+            <summary id="gaps-title">Before you plant</summary>
+            <ul>
+              <li>No yield, price, or lab soil test.</li>
+              <li>The municipality of this {report.isSample ? 'demo point' : 'field'} is not verified.</li>
+              <li>The rain number covers a wide area, not a gauge in the field.</li>
+              <li>NDVI shows plant greenness. It cannot identify the crop or diagnose its health.</li>
+            </ul>
+          </details>
+        </div>
+      </section>
     </main>
   </>
 }
