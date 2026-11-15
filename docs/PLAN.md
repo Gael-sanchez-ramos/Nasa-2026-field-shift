@@ -88,7 +88,7 @@ Se deja fuera porque hoy no tenemos los municipios cerrados ni las cifras de SIA
 | Dibujar cualquier polígono | Podría traer su predio | Ya está | Alto en vivo | Se queda en el código. No se usa en el pitch |
 | Vista de cooperativa | Otro usuario | Alto | Alto | No |
 | NDVI de HLS Sentinel-2 | Muestra el historial de verdor en el punto del demo | Bajo con la extracción lista | Depende de Earthdata para descargar | Sí, como complemento si hay observaciones válidas |
-| SMAP o IMERG | Contexto regional adicional | Alto | Depende de acceso y validación | Trabajo futuro |
+| SMAP, IMERG, MERRA-2 and SoilGrids | Weekly moisture in the report; regional moisture, rain, temperature and water retention on the map | Integrated | Check map overlays in the browser | Yes |
 | Precio y rendimiento en pesos | El slider de income tendría dinero | Medio | Alto | No entra a la fórmula |
 | PDF o WhatsApp | Se lo lleva al predio | Medio | Bajo | No |
 
@@ -129,9 +129,10 @@ Revisiones de la misma opción:
 El [PR #11](https://github.com/Gael-sanchez-ramos/Nasa-2026-field-shift/pull/11) integró dos capas de [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/access-basics/) sobre el satélite de Google. GIBS sirve las teselas públicas que utiliza NASA Worldview. Las capas son un complemento opcional. El recorrido principal del pitch sigue empezando con “Use sample field”.
 
 - **Vegetation (NDVI)** muestra el promedio mensual de verdor de MODIS Terra.
-- **Temperature** muestra la temperatura media mensual del aire a 2 m de MERRA-2.
-- Ambas capas muestran agosto del año del escenario cuando hay un reporte cargado. El mapa inicial usa agosto de 2023 antes de cargar un reporte. La etiqueta muestra el producto y la fecha.
-- **Rainfall** queda deshabilitada en el mapa. La lluvia anual se consulta en el reporte de NASA POWER. **Soil** remite a la tarjeta de textura de INEGI.
+- **Temperature (global)** muestra la temperatura media mensual del aire a 2 m de MERRA-2. **Temperature (regional)** usa MERRA-2 para agosto de 2017 y 2023 con cinco rangos en °C compartidos entre ambos años.
+- Dated layers show August of the selected scenario year. The initial map uses August 2023. The regional layers are cached for August 2017 and 2023.
+- **Rainfall** shows average daily NASA IMERG rain (mm/day) on a 0.1° grid, with the same scale for both years. The report still shows annual rain from NASA POWER.
+- **Soil moisture** uses NASA SMAP Level 4 to show estimated moisture in the top meter of soil. **Soil water retention** uses ISRIC SoilGrids to show a static soil property around Linares (15–30 cm deep). The INEGI texture lookup stays in the report.
 - El selector está en el mapa inicial. El mapa compacto del reporte muestra la parcela en vista satelital. En el reporte siguen disponibles la serie de NDVI HLS Sentinel-2 de 30 m y la gráfica semanal de humedad de SMAP.
 
 Ross publica desde el `main` actualizado con `npx vercel --prod`. El equipo probó ambas capas en el enlace público de Vercel y confirmó que funcionan. La fuente está registrada en [FUENTES.md](FUENTES.md).
@@ -393,7 +394,7 @@ Porque en un fin de semana no lo podíamos explicar ni defender. El orden es una
 Una IA ayudó a escribir código y documentos. La idea, el caso de Nuevo León y la decisión de no dar una orden de siembra son del equipo. Está declarado en el formulario. El campo de Super Intelligence no se les muestra a los jueces. El reconocimiento dentro del proyecto sí.
 
 **¿Dónde está SMAP o el NDVI?**
-No están en el producto. POWER sí está, y con eso se cumple el uso de un recurso NASA. SMAP, MODIS e IMERG piden cuenta de Earthdata y un procesamiento que hoy nos haría inventar el hueco. Están en el trabajo futuro.
+The sample field report shows weekly regional moisture from SMAP and greenness from HLS Sentinel-2. The map shows monthly greenness from MODIS as well as August rain from IMERG and August root-zone moisture from SMAP.
 
 **¿Por qué no cítricos, si Nuevo León es cítricos?**
 Porque el reto pide explorar rotaciones. Un huerto de naranja no se rota cada temporada. La opción A es sorgo, frijol y forraje. Los cítricos se quedan como contexto del estado cuando tengamos la cifra abierta en el PDF oficial.

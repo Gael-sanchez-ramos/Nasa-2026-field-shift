@@ -1,3 +1,7 @@
+import imergMap from './imerg-map.json'
+import temperatureMap from './temperature-map.json'
+import smapMap from './smap-map.json'
+import soilgridsMap from './soilgrids-map.json'
 import { useEffect, useRef, useState } from 'react'
 
 const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
@@ -22,7 +26,33 @@ function loadMaps() {
 // convert the source Kelvin ticks (220, 242, 265, 287, 308) to rounded °C.
 // https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_L3_NDVI.xml
 // https://gibs.earthdata.nasa.gov/colormaps/v1.3/MERRA2_2m_Air_Temperature_Monthly.xml
+function rangeTicks(scale) {
+  return scale.map(([start, color], index) => {
+    const end = scale[index + 1]?.[0]
+    let label = `${start}–${end}`
+    if (start == null) label = `<${end}`
+    if (end == null) label = `${start}+`
+    return [label, color]
+  })
+}
+
 const legends = {
+  smap: {
+    ends: ['Less moisture', 'More moisture'],
+    ticks: rangeTicks(smapMap.scale),
+  },
+  soilgrids: {
+    ends: ['Holds less water', 'Holds more water'],
+    ticks: rangeTicks(soilgridsMap.scale),
+  },
+  regionalTemperature: {
+    ends: ['Cooler air', 'Warmer air'],
+    ticks: rangeTicks(temperatureMap.scale),
+  },
+  imerg: {
+    ends: ['Less rain', 'More rain'],
+    ticks: rangeTicks(imergMap.scale),
+  },
   ndvi: {
     ends: ['Less green vegetation', 'More green vegetation'],
     ticks: [['0.2', '177,152,131'], ['0.3', '191,222,119'], ['0.4', '143,183,22'], ['0.6', '57,135,0'], ['0.8', '5,100,0']],
@@ -66,6 +96,19 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
   // NASA GIBS raster tiles over the satellite base map. GIBS needs no key.
   // Past the layer's own zoom level, getTile crops the right piece of the
   // coarse tile with CSS instead of letting Maps repeat it at 256 px.
+  const overlayImage = overlay?.image
+  const overlayBounds = overlay?.bounds
+  useEffect(() => {
+    if (status !== 'ready' || !overlayImage || !overlayBounds) return
+    // Images are generated in Web Mercator to match the Google base map.
+    // https://developers.google.com/maps/documentation/javascript/groundoverlays
+    const image = new window.google.maps.GroundOverlay(overlayImage, overlayBounds, {
+      clickable: false, opacity: 0.72,
+    })
+    image.setMap(map.current)
+    return () => image.setMap(null)
+  }, [overlayImage, overlayBounds, status])
+
   const overlayId = overlay?.id
   const overlayDate = overlay?.date
   const overlayLevel = overlay?.level
@@ -138,10 +181,14 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
         <div className="legend-ends"><span>{legend.ends[0]}</span><span>{legend.ends[1]}</span></div>
         <ul className="legend-ticks">
           {legend.ticks.map(([value, rgb]) => <li key={value}>
-            <span style={{ backgroundColor: `rgb(${rgb})` }} aria-hidden="true" />
+            <span style={{ backgroundColor: rgb.startsWith('#') ? rgb : `rgb(${rgb})` }} aria-hidden="true" />
             {value}
           </li>)}
         </ul>
+        {overlay.note && <p className="legend-note">{overlay.note}</p>}
+        {overlay.source && <a className="legend-source" href={overlay.source[1]}>{overlay.source[0]}</a>}
+        {overlay.zoomToCoverage && <button type="button" className="legend-zoom"
+          onClick={() => map.current.fitBounds(overlay.bounds, 32)}>Zoom to layer</button>}
       </figure> : points.length > 0 && <div className="map-legend outline-legend">
         <span aria-hidden="true" /> Field outline
       </div>}

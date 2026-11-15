@@ -7,6 +7,10 @@ import RootZoneMoisture from './RootZoneMoisture'
 import LocalSoil from './LocalSoil'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
+import imergMap from './imerg-map.json'
+import temperatureMap from './temperature-map.json'
+import smapMap from './smap-map.json'
+import soilgridsMap from './soilgrids-map.json'
 import { rankRotations } from './score.js'
 
 // Display-only boundary centered on the demo point. Actual field corners were not supplied.
@@ -25,9 +29,11 @@ const reportSections = ['NASA observations', 'Local soil', 'Crop characteristics
 const mapLayers = [
   ['satellite', 'Satellite', 'Natural color'],
   ['ndvi', 'Vegetation (NDVI)', 'Greenness, from near-infrared'],
-  ['rain', 'Rainfall', 'Not shown: half-hourly snapshots read empty in a dry year'],
-  ['temp', 'Temperature', 'Monthly mean air temperature'],
-  ['soil', 'Soil', 'See mapped texture in the field report'],
+  ['imerg', 'Rainfall', 'NASA IMERG · Nuevo León area'],
+  ['temp', 'Temperature (global)', 'MERRA-2 · Global scale'],
+  ['regional-temp', 'Temperature (regional)', 'MERRA-2 · Nuevo León scale'],
+  ['smap', 'Soil moisture', 'NASA SMAP · Top 1 m of soil'],
+  ['soilgrids', 'Soil water retention', 'ISRIC SoilGrids · 15–30 cm deep'],
 ]
 
 export default function App() {
@@ -95,12 +101,37 @@ export default function App() {
   // POWER stays the source for the report numbers; the map layers are visual context.
   // Docs: https://nasa-gibs.github.io/gibs-api-docs/access-basics/
   const gibsYear = climate?.year ?? 2023
+  const hasImerg = imergMap.years.includes(gibsYear)
+  const hasRegionalTemperature = temperatureMap.years.includes(gibsYear)
+  const hasSmap = smapMap.years.includes(gibsYear)
+  const availableLayers = { imerg: hasImerg, 'regional-temp': hasRegionalTemperature, smap: hasSmap }
+  const activeLayer = availableLayers[layer] === false ? 'satellite' : layer
   const overlay = {
+    smap: {
+      legend: 'smap', image: `/smap/august-${gibsYear}.png`, bounds: smapMap.bounds, zoomToCoverage: true,
+      label: `Estimated soil moisture (% by volume) · August ${gibsYear} · Top 1 m`,
+      note: 'Regional estimate on a ~9 km grid.',
+      source: ['NASA POWER / SMAP Level 4', 'https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap'],
+    },
+    soilgrids: {
+      legend: 'soilgrids', image: '/soilgrids/water-retention.png', bounds: soilgridsMap.bounds, zoomToCoverage: true,
+      label: 'Estimated water retention (% by volume) · 15–30 cm deep',
+      note: 'Soil property at 33 kPa. It does not change with the year.',
+      source: ['ISRIC SoilGrids', 'https://maps.isric.org/generated/soilgrids/wv0033.html'],
+    },
+    'regional-temp': hasRegionalTemperature ? {
+      legend: 'regionalTemperature', image: `/temperature/august-${gibsYear}.png`, bounds: temperatureMap.bounds,
+      label: `Average air temperature at 2 m (°C) · August ${gibsYear} · NASA MERRA-2`,
+    } : null,
+    imerg: hasImerg ? {
+      legend: 'imerg', image: `/imerg/august-${gibsYear}.png`, bounds: imergMap.bounds,
+      label: `Average daily rain (mm/day) · August ${gibsYear} · NASA IMERG · ~10 km grid`,
+    } : null,
     ndvi: { legend: 'ndvi', id: 'MODIS_Terra_L3_NDVI_Monthly', level: 7, date: `${gibsYear}-08-01`,
       label: `MODIS Terra NDVI, monthly · August ${gibsYear} · NASA GIBS` },
     temp: { legend: 'temperature', id: 'MERRA2_2m_Air_Temperature_Monthly', level: 6, date: `${gibsYear}-08-01`,
       label: `MERRA-2 monthly mean 2 m air temperature · August ${gibsYear} · NASA GIBS` },
-  }[layer] ?? null
+  }[activeLayer] ?? null
 
   if (view === 'map') return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
@@ -113,14 +144,15 @@ export default function App() {
         <FieldMap points={points} drawing={drawing} center={report?.location ?? sample.location} recenterRequest={sampleSelections}
           overlay={overlay} onPoint={point => setPoints(previous => [...previous, point])}>
           <details className="layer-panel">
-            <summary>Map view <small>· {mapLayers.find(([key]) => key === layer)?.[1]}</small></summary>
+            <summary>Map view <small>· {mapLayers.find(([key]) => key === activeLayer)?.[1]}</small></summary>
             <div className="layer-options" role="radiogroup" aria-label="Map layer">
               {mapLayers.map(([key, name, note]) => {
-                const available = key === 'satellite' || key === 'ndvi' || key === 'temp'
+                const available = availableLayers[key] ?? true
+                const noteText = available ? note : 'Available for August 2017 and 2023'
                 return <label key={key} className={available ? undefined : 'disabled'}>
-                  <input type="radio" name="map-layer" value={key} checked={layer === key} disabled={!available}
+                  <input type="radio" name="map-layer" value={key} checked={activeLayer === key} disabled={!available}
                     onChange={() => setLayer(key)} />
-                  <span><strong>{name}</strong><small>{note}</small></span>
+                  <span><strong>{name}</strong><small>{noteText}</small></span>
                 </label>
               })}
             </div>

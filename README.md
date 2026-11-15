@@ -64,6 +64,19 @@ with `pyshp` and `pyproj` installed.
 
 ## Regional root-zone moisture
 
+In **Map view**, choose **Soil moisture** for monthly NASA POWER / SMAP Level 4
+RZMC (0–100 cm) in August 2017 or 2023, or **Soil water retention** for the
+static ISRIC SoilGrids mean prediction at 33 kPa and 15–30 cm depth.
+Both legends show percent water by volume with separate scales. The SMAP map
+covers the Nuevo León region on a roughly 9 km grid. The SoilGrids layer covers
+the demo area around Linares using the 250 m source product. The layer shows a
+soil property, not the amount of water in the soil on a given date.
+
+Run `python3 scripts/cache_moisture_maps.py` to rebuild the overlays
+(NumPy, numcodecs, Pillow, tifffile, and imagecodecs required).
+Sources: [NASA POWER SMAP](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap)
+and [ISRIC SoilGrids WCS](https://maps.isric.org/generated/soilgrids/wv0033.html).
+
 The sample field shows weekly and annual volumetric water content for its
 typical and dry rainfall years using [NASA POWER / SMAP Level 4](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap).
 The `RZMC` field describes the regional 0–100 cm soil column. The bundled data
