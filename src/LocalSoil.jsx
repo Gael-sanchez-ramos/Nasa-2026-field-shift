@@ -40,7 +40,7 @@ export default function LocalSoil({ location }) {
       {soil && <>
         <p>Mapped surface texture: <strong>{soil.texture}</strong></p>
         <p>Soil map unit: <strong>{soil.unit}</strong></p>
-        <p>Regional map estimate for the upper 30 cm at the selected point.</p>
+        <p>The map describes the top 30 cm of soil. Check how well water drains in your field before choosing a crop.</p>
       </>}
     </div>
     <a className="source" href={soilSource}>INEGI soil map · Linares G14-11 · 1:250,000</a>
