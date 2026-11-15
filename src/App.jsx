@@ -7,7 +7,6 @@ import RootZoneMoisture from './RootZoneMoisture'
 import LocalSoil from './LocalSoil'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
-import ndviCache from './sample-ndvi.json'
 import { rankRotations } from './score.js'
 
 // Display-only boundary centered on the demo point. Actual field corners were not supplied.
@@ -26,11 +25,10 @@ const reportSections = ['NASA observations', 'Local soil', 'Crop characteristics
 const mapLayers = [
   ['satellite', 'Satellite', 'Natural color'],
   ['ndvi', 'Vegetation (NDVI)', 'Greenness, from near-infrared'],
-  ['rain', 'Rainfall', 'Annual total, regional'],
-  ['temp', 'Temperature', 'Hottest day, regional'],
+  ['rain', 'Rainfall', 'Not shown: half-hourly snapshots read empty in a dry year'],
+  ['temp', 'Temperature', 'Monthly mean air temperature'],
   ['soil', 'Soil', 'See mapped texture in the field report'],
 ]
-const ndviMean = ndviCache.observations.reduce((sum, obs) => sum + obs.ndvi, 0) / ndviCache.observations.length
 
 export default function App() {
   const [points, setPoints] = useState([])
@@ -93,24 +91,16 @@ export default function App() {
   const leaders = comparison.ranked.filter(crop => Math.abs(crop.score - comparison.ranked[0].score) < 1e-10)
   const topPriorities = priorities.filter(([key]) => comparison.weights[key] === Math.max(...Object.values(comparison.weights)))
 
-  // Overlay tints restyle the field polygon; the base map stays satellite imagery.
-  // Values are the cached point or regional POWER cell, never a field measurement.
-  const layerTint = {
-    satellite: null,
-    ndvi: report?.isSample ? {
-      color: '#2e7d4f', opacity: 0.25 + ndviMean * 0.4,
-      label: `Mean NDVI ${ndviCache.year}: ${ndviMean.toFixed(2)} · demo point`,
-    } : null,
-    rain: climate ? {
-      color: '#3a7bd5', opacity: 0.35,
-      label: `${climate.year} rainfall: ${climate.rain} mm · NASA POWER regional cell`,
-    } : null,
-    temp: climate?.high != null ? {
-      color: '#d15b3a', opacity: 0.35,
-      label: `${climate.year} hottest day: ${climate.high.toFixed(1)} °C · NASA POWER regional cell`,
-    } : null,
-    soil: null,
-  }[layer]
+  // GIBS tile overlays paint the whole map with real NASA rasters; no key or account needed.
+  // POWER stays the source for the report numbers; the map layers are visual context.
+  // Docs: https://nasa-gibs.github.io/gibs-api-docs/access-basics/
+  const gibsYear = climate?.year ?? 2023
+  const overlay = {
+    ndvi: { id: 'MODIS_Terra_L3_NDVI_Monthly', level: 7, date: `${gibsYear}-08-01`,
+      label: `MODIS Terra NDVI, monthly · August ${gibsYear} · NASA GIBS` },
+    temp: { id: 'MERRA2_2m_Air_Temperature_Monthly', level: 6, date: `${gibsYear}-08-01`,
+      label: `MERRA-2 monthly mean 2 m air temperature · August ${gibsYear} · NASA GIBS` },
+  }[layer] ?? null
 
   if (view === 'map') return <>
     <header className="top"><strong>Field Shift</strong><span>Nuevo León pilot</span></header>
@@ -119,17 +109,15 @@ export default function App() {
       <p className="intro">Find your field on the map and tap its corners. Close the outline, then select Analyze field.</p>
       <section className="panel map-panel" aria-label="Field map">
         <FieldMap points={points} drawing={drawing} center={sample.location} recenterRequest={sampleSelections}
-          tint={layerTint} onPoint={point => setPoints(previous => [...previous, point])}>
+          overlay={overlay} onPoint={point => setPoints(previous => [...previous, point])}>
           <fieldset className="layer-panel">
             <legend>Map view</legend>
             {mapLayers.map(([key, name, note]) => {
-              const available = key === 'satellite' || (key !== 'soil' && Boolean({
-                ndvi: report?.isSample, rain: climate, temp: climate?.high != null,
-              }[key]))
+              const available = key === 'satellite' || key === 'ndvi' || key === 'temp'
               return <label key={key} className={available ? undefined : 'disabled'}>
                 <input type="radio" name="map-layer" value={key} checked={layer === key} disabled={!available}
                   onChange={() => setLayer(key)} />
-                <span><strong>{name}</strong><small>{key === 'soil' || available ? note : 'Load the report first'}</small></span>
+                <span><strong>{name}</strong><small>{note}</small></span>
               </label>
             })}
           </fieldset>

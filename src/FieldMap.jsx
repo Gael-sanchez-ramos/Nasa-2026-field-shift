@@ -18,7 +18,7 @@ function loadMaps() {
   return mapsPromise
 }
 
-export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, tint, compact, children }) {
+export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, overlay, compact, children }) {
   const element = useRef(null)
   const map = useRef(null)
   const [status, setStatus] = useState(key ? 'loading' : 'unconfigured')
@@ -48,6 +48,45 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     map.current.setZoom(15)
   }, [center, recenterRequest, status])
 
+  // NASA GIBS raster tiles over the satellite base map. GIBS needs no key.
+  // Past the layer's own zoom level, getTile crops the right piece of the
+  // coarse tile with CSS instead of letting Maps repeat it at 256 px.
+  const overlayId = overlay?.id
+  const overlayDate = overlay?.date
+  const overlayLevel = overlay?.level
+  useEffect(() => {
+    if (status !== 'ready' || !overlayId) return
+    const maps = window.google.maps
+    const url = (zoom, row, col) =>
+      `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${overlayId}/default/${overlayDate}/GoogleMapsCompatible_Level${overlayLevel}/${zoom}/${row}/${col}.png`
+    const layer = {
+      tileSize: new maps.Size(256, 256),
+      name: overlayId,
+      credit: 'NASA GIBS',
+      getTile(coord, zoom, ownerDocument) {
+        const div = ownerDocument.createElement('div')
+        div.style.cssText = 'width:256px;height:256px;overflow:hidden;position:relative;opacity:0.55'
+        const img = ownerDocument.createElement('img')
+        img.alt = ''
+        if (zoom <= overlayLevel) {
+          img.src = url(zoom, coord.y, coord.x)
+          img.style.cssText = 'width:256px;height:256px'
+        } else {
+          const scale = 2 ** (zoom - overlayLevel)
+          img.src = url(overlayLevel, Math.floor(coord.y / scale), Math.floor(coord.x / scale))
+          img.style.cssText = `position:absolute;width:${256 * scale}px;height:${256 * scale}px;left:${-(coord.x % scale) * 256}px;top:${-(coord.y % scale) * 256}px;max-width:none`
+        }
+        div.append(img)
+        return div
+      },
+      releaseTile(div) {
+        div.replaceChildren()
+      },
+    }
+    map.current.overlayMapTypes.push(layer)
+    return () => map.current.overlayMapTypes.removeAt(map.current.overlayMapTypes.getLength() - 1)
+  }, [overlayId, overlayDate, overlayLevel, status])
+
   useEffect(() => {
     if (status !== 'ready' || !drawing) return
     const listener = map.current.addListener('click', event => onPoint(event.latLng.toJSON()))
@@ -59,13 +98,12 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     // Google Maps shapes: https://developers.google.com/maps/documentation/javascript/shapes
     const { Polygon, Polyline } = window.google.maps
     const Shape = drawing ? Polyline : Polygon
-    const color = tint?.color ?? '#d4f566'
     const shape = new Shape({
       map: map.current, [drawing ? 'path' : 'paths']: points, clickable: false,
-      strokeColor: color, strokeWeight: 3, fillColor: color, fillOpacity: tint?.opacity ?? 0.25,
+      strokeColor: '#d4f566', strokeWeight: 3, fillColor: '#d4f566', fillOpacity: 0.25,
     })
     return () => shape.setMap(null)
-  }, [points, status, drawing, tint])
+  }, [points, status, drawing])
 
   return <div className={compact ? 'map map-small' : 'map'}>
     <div className="map-canvas" ref={element} />
@@ -74,7 +112,7 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
       <strong>{status === 'loading' ? 'Loading satellite map…' : 'Satellite map unavailable'}</strong>
       <span>{compact ? 'The field outline is illustrative.' : 'Explore the climate report with the sample field.'}</span>
     </div>}
-    {status === 'ready' && tint && <div className="map-legend">{tint.label}</div>}
+    {status === 'ready' && overlay?.label && <div className="map-legend">{overlay.label}</div>}
     {status === 'ready' && children}
   </div>
 }
