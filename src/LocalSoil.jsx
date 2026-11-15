@@ -28,8 +28,11 @@ export default function LocalSoil({ location }) {
 
   const soil = location && polygons ? findMappedSoil(polygons, location) : null
 
-  return <section className="report-section" aria-labelledby="soil-title">
-    <h3 id="soil-title">Local soil</h3>
+  return <section className="panel pad" aria-labelledby="soil-title">
+    <div className="section-head">
+      <h3 id="soil-title">Local soil</h3>
+      {(!soil) && <span className="badge badge-warn">Not verified</span>}
+    </div>
     <div aria-live="polite">
       {!location && <p>Finish drawing a field or load the sample field to check the soil map.</p>}
       {location && !polygons && <p>{failed ? 'The soil map could not be loaded.' : 'Checking the soil map…'}</p>}

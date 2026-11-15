@@ -18,7 +18,7 @@ function loadMaps() {
   return mapsPromise
 }
 
-export default function FieldMap({ points, drawing, onPoint, center, recenterRequest }) {
+export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, tint, compact, children }) {
   const element = useRef(null)
   const map = useRef(null)
   const [status, setStatus] = useState(key ? 'loading' : 'unconfigured')
@@ -31,7 +31,7 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     loadMaps().then(maps => {
       if (!active) return
       map.current = new maps.Map(element.current, {
-        center, zoom: 13, mapTypeId: 'satellite', gestureHandling: 'greedy',
+        center, zoom: compact ? 15 : 13, mapTypeId: 'satellite', gestureHandling: 'greedy',
         disableDefaultUI: true, zoomControl: true, disableDoubleClickZoom: true,
       })
       setStatus('ready')
@@ -40,7 +40,7 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
       active = false
       window.removeEventListener('field-shift-map-error', fail)
     }
-  }, [center])
+  }, [center, compact])
 
   useEffect(() => {
     if (status !== 'ready' || !recenterRequest) return
@@ -59,19 +59,22 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     // Google Maps shapes: https://developers.google.com/maps/documentation/javascript/shapes
     const { Polygon, Polyline } = window.google.maps
     const Shape = drawing ? Polyline : Polygon
+    const color = tint?.color ?? '#d4f566'
     const shape = new Shape({
       map: map.current, [drawing ? 'path' : 'paths']: points, clickable: false,
-      strokeColor: '#d4f566', strokeWeight: 3, fillColor: '#d4f566', fillOpacity: 0.25,
+      strokeColor: color, strokeWeight: 3, fillColor: color, fillOpacity: tint?.opacity ?? 0.25,
     })
     return () => shape.setMap(null)
-  }, [points, status, drawing])
+  }, [points, status, drawing, tint])
 
-  return <div className="map">
+  return <div className={compact ? 'map map-small' : 'map'}>
     <div className="map-canvas" ref={element} />
     {status !== 'ready' && <div className="map-message">
       <span className="map-pin" aria-hidden="true">◎</span>
       <strong>{status === 'loading' ? 'Loading satellite map…' : 'Satellite map unavailable'}</strong>
-      <span>Explore the climate report with the sample field.</span>
+      <span>{compact ? 'The field outline is illustrative.' : 'Explore the climate report with the sample field.'}</span>
     </div>}
+    {status === 'ready' && tint && <div className="map-legend">{tint.label}</div>}
+    {status === 'ready' && children}
   </div>
 }

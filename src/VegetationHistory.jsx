@@ -10,13 +10,16 @@ export default function VegetationHistory({ location }) {
     {series ? <>
       <p>{series.year} · Sample point · {series.observations.length} valid observations</p>
       <p>Higher NDVI generally indicates greener vegetation.</p>
-      <ul className="ndvi-observations" aria-label="NDVI by observation date">
-        {series.observations.map(({ date, ndvi }) => <li key={date}>
-          <time dateTime={date}>{date}</time>
-          <meter min={-1} max={1} value={ndvi} aria-label={`NDVI on ${date}`} />
-          <span>{ndvi.toFixed(2)}</span>
-        </li>)}
-      </ul>
+      <details className="fold">
+        <summary>Daily observations graph</summary>
+        <ul className="ndvi-observations" aria-label="NDVI by observation date">
+          {series.observations.map(({ date, ndvi }) => <li key={date}>
+            <time dateTime={date}>{date}</time>
+            <meter min={-1} max={1} value={ndvi} aria-label={`NDVI on ${date}`} />
+            <span>{ndvi.toFixed(2)}</span>
+          </li>)}
+        </ul>
+      </details>
     </> : <p>NDVI data for this sample point has not been downloaded yet.</p>}
     <a className="source" href={source}>NASA HLS Sentinel-2 vegetation indices · 30 m</a>
   </div>
