@@ -96,9 +96,9 @@ export default function App() {
   // Docs: https://nasa-gibs.github.io/gibs-api-docs/access-basics/
   const gibsYear = climate?.year ?? 2023
   const overlay = {
-    ndvi: { id: 'MODIS_Terra_L3_NDVI_Monthly', level: 7, date: `${gibsYear}-08-01`,
+    ndvi: { legend: 'ndvi', id: 'MODIS_Terra_L3_NDVI_Monthly', level: 7, date: `${gibsYear}-08-01`,
       label: `MODIS Terra NDVI, monthly · August ${gibsYear} · NASA GIBS` },
-    temp: { id: 'MERRA2_2m_Air_Temperature_Monthly', level: 6, date: `${gibsYear}-08-01`,
+    temp: { legend: 'temperature', id: 'MERRA2_2m_Air_Temperature_Monthly', level: 6, date: `${gibsYear}-08-01`,
       label: `MERRA-2 monthly mean 2 m air temperature · August ${gibsYear} · NASA GIBS` },
   }[layer] ?? null
 
@@ -110,20 +110,19 @@ export default function App() {
       <section className="panel map-panel" aria-label="Field map">
         <FieldMap points={points} drawing={drawing} center={sample.location} recenterRequest={sampleSelections}
           overlay={overlay} onPoint={point => setPoints(previous => [...previous, point])}>
-          <fieldset className="layer-panel">
-            <legend>Map view</legend>
-            {mapLayers.map(([key, name, note]) => {
-              const available = key === 'satellite' || key === 'ndvi' || key === 'temp'
-              return <label key={key} className={available ? undefined : 'disabled'}>
-                <input type="radio" name="map-layer" value={key} checked={layer === key} disabled={!available}
-                  onChange={() => setLayer(key)} />
-                <span><strong>{name}</strong><small>{note}</small></span>
-              </label>
-            })}
-          </fieldset>
-          {drawing && <div className="map-status">
-            {points.length} {points.length === 1 ? 'corner' : 'corners'} placed · tap Finish drawing to close the outline
-          </div>}
+          <details className="layer-panel">
+            <summary>Map view <small>· {mapLayers.find(([key]) => key === layer)?.[1]}</small></summary>
+            <div className="layer-options" role="radiogroup" aria-label="Map layer">
+              {mapLayers.map(([key, name, note]) => {
+                const available = key === 'satellite' || key === 'ndvi' || key === 'temp'
+                return <label key={key} className={available ? undefined : 'disabled'}>
+                  <input type="radio" name="map-layer" value={key} checked={layer === key} disabled={!available}
+                    onChange={() => setLayer(key)} />
+                  <span><strong>{name}</strong><small>{note}</small></span>
+                </label>
+              })}
+            </div>
+          </details>
         </FieldMap>
         <div className="controls pad map-controls">
           {drawing ? <>
