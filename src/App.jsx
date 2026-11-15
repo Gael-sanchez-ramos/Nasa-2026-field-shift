@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
 import VegetationHistory from './VegetationHistory'
+import LocalSoil from './LocalSoil'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
 import { rankRotations } from './score.js'
@@ -152,11 +153,7 @@ export default function App() {
           </> : <p>{report?.isSample ? "Climate data for this demo point is pending." : "Draw a field or load the sample to compare historical scenarios."}</p>}
           {report?.isSample && <VegetationHistory location={report.location} />}
           </section>
-          <section className="report-section" aria-labelledby="soil-title">
-            <h3 id="soil-title">Local soil</h3>
-            <p><strong>Not verified</strong> · Soil data for this field is pending.</p>
-            <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
-          </section>
+          <LocalSoil location={report?.isSample ? sample.location : drawing ? null : point} />
         </section>
       </div>
     </main>

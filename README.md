@@ -46,3 +46,18 @@ NDVI from [HLS Sentinel-2 Vegetation Indices v2.0](https://data.nasa.gov/dataset
 at 30 m for the demo point. The [HLS VI user guide](https://lpdaac.usgs.gov/documents/2088/HLS_VI_User_Guide_V2.pdf)
 describes the product cloud mask. The script excludes missing and out-of-range
 values and takes the median when multiple values share a date.
+
+## Local soil map
+
+The app looks up the demo point or a point inside a finished field outline in
+the bundled [INEGI Edaphology Series II, Linares G14-11 sheet](https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=702825236120)
+at 1:250,000. The lookup runs in the browser. The map unit uses `CLAVE_WRB`
+and the dominant surface texture uses `CLASE_TEXT`, interpreted using the
+[INEGI Series II guide](https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/702825231606.pdf).
+The demo point intersects unit `VRmzpe+KScco/3`, with fine mapped texture.
+Outside the Linares sheet or where a texture is missing, the app reports
+that mapped texture is unavailable.
+
+To regenerate the bundled layer, download the SHP ZIP from the INEGI sheet
+and run `python3 scripts/prepare_soil.py path/to/download.zip public/soil/linares.json`
+with `pyshp` and `pyproj` installed.
