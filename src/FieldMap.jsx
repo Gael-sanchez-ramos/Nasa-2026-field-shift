@@ -18,7 +18,7 @@ function loadMaps() {
   return mapsPromise
 }
 
-export default function FieldMap({ points, drawing, onPoint, center, tint, compact, children }) {
+export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, tint, compact, children }) {
   const element = useRef(null)
   const map = useRef(null)
   const [status, setStatus] = useState(key ? 'loading' : 'unconfigured')
@@ -41,6 +41,12 @@ export default function FieldMap({ points, drawing, onPoint, center, tint, compa
       window.removeEventListener('field-shift-map-error', fail)
     }
   }, [center, compact])
+
+  useEffect(() => {
+    if (status !== 'ready' || !recenterRequest) return
+    map.current.setCenter(center)
+    map.current.setZoom(15)
+  }, [center, recenterRequest, status])
 
   useEffect(() => {
     if (status !== 'ready' || !drawing) return

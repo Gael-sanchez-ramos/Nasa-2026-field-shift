@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import FieldMap from './FieldMap'
 import VegetationHistory from './VegetationHistory'
+import LocalSoil from './LocalSoil'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
 import ndviCache from './sample-ndvi.json'
@@ -47,9 +48,12 @@ export default function App() {
     setLayer('satellite')
   }
 
+  const [sampleSelections, setSampleSelections] = useState(0)
+
   function useSample() {
     resetReport()
     setPoints(sampleBoundary)
+    setSampleSelections(previous => previous + 1)
     setDrawing(false)
     setReport({ ...sample, isSample: true })
     setView('report')
@@ -107,7 +111,7 @@ export default function App() {
       <h1>Start by outlining your field.</h1>
       <p className="intro">Find your field on the map and tap its corners. The report opens when the outline is closed.</p>
       <section className="panel map-panel" aria-label="Field map">
-        <FieldMap points={points} drawing={drawing} center={sample.location}
+        <FieldMap points={points} drawing={drawing} center={sample.location} recenterRequest={sampleSelections}
           tint={layerTint} onPoint={point => setPoints(previous => [...previous, point])}>
           <fieldset className="layer-panel">
             <legend>Map view</legend>
@@ -172,7 +176,7 @@ export default function App() {
               <h2 id="field-title">Your field</h2>
               <p>{report.isSample ? 'Demo point' : 'Selected field'} · {Math.abs(report.location.lat).toFixed(4)}° N, {Math.abs(report.location.lng).toFixed(4)}° W</p>
             </div>
-            <FieldMap compact points={points} drawing={false} center={report.location}
+            <FieldMap compact points={points} drawing={false} center={report.location} recenterRequest={sampleSelections}
               onPoint={point => setPoints(previous => [...previous, point])} />
             <div className="controls pad">
               <button onClick={useSample}>Use sample field</button>
@@ -205,14 +209,7 @@ export default function App() {
             </> : <p>Climate data for this field is pending.</p>}
             {report.isSample && <VegetationHistory location={report.location} />}
           </section>
-          <section className="panel pad" aria-labelledby="soil-title">
-            <div className="section-head">
-              <h3 id="soil-title">Local soil</h3>
-              <span className="badge badge-warn">Not verified</span>
-            </div>
-            <p>Soil data for this {report.isSample ? 'demo point' : 'field'} is pending. We are not substituting a nearby point.</p>
-            <a className="source" href="https://soilgrids.org/">ISRIC SoilGrids</a>
-          </section>
+          <LocalSoil location={report?.isSample ? sample.location : drawing ? null : point} />
         </div>
         <div className="col">
           <section className="panel pad" aria-labelledby="priorities-title">
@@ -274,7 +271,7 @@ export default function App() {
             <h3 id="gaps-title">What this does not know</h3>
             <ul>
               <li>The farmer’s yield, market price, or lab soil test. There is no yield model.</li>
-              <li>The soil and municipality of this {report.isSample ? 'demo point' : 'field'}. They are not verified.</li>
+              <li>The municipality of this {report.isSample ? 'demo point' : 'field'}. It is not verified. The mapped soil texture is a regional INEGI estimate, not a lab test.</li>
               <li>Rain on the field itself. NASA POWER is a regional cell, not a station on the field.</li>
               <li>What grows at the point. NDVI shows greenness, not crop type or yield.</li>
             </ul>
