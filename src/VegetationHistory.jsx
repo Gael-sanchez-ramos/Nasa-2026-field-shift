@@ -35,9 +35,9 @@ export default function VegetationHistory({ location }) {
     </summary>
     <div className="stat-body">
       <p className="stat-read">NDVI estimates plant greenness. Each bar marks a satellite observation on its actual date. Gaps mean no valid observations.</p>
-      <div className="ndvi-timeline" aria-hidden="true">
+      <div className="ndvi-timeline">
         <div className="ndvi-plot">
-          {series.observations.map(({ date, ndvi }) => <span key={date} title={`${date}: ${ndvi.toFixed(2)}`}
+          {series.observations.map(({ date, ndvi }) => <span key={date} tabIndex={0} role="img" aria-label={`${date}: NDVI ${ndvi.toFixed(2)}`} data-tooltip={`${date} · ${ndvi.toFixed(2)} NDVI`}
             style={{ left: `${position(Date.parse(date))}%`, height: `${(ndvi + 1) * 50}%`, background: greenness(ndvi) }} />)}
         </div>
         <div className="ndvi-ticks">

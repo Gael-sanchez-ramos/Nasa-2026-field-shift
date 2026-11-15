@@ -1,8 +1,9 @@
 import '../index.css'
 import '../App.css'
+import '../premium.css'
 
 export const metadata = {
-  title: 'Field Shift',
+  title: 'Xopan',
   description: 'Explore crop rotations and historical climate for fields in Nuevo León.',
 }
 
