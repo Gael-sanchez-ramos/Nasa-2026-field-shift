@@ -18,6 +18,21 @@ function loadMaps() {
   return mapsPromise
 }
 
+// Representative colors from the official GIBS colormaps. Temperature labels
+// convert the source Kelvin ticks (220, 242, 265, 287, 308) to rounded °C.
+// https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_L3_NDVI.xml
+// https://gibs.earthdata.nasa.gov/colormaps/v1.3/MERRA2_2m_Air_Temperature_Monthly.xml
+const legends = {
+  ndvi: {
+    ends: ['Less green vegetation', 'More green vegetation'],
+    ticks: [['0.2', '177,152,131'], ['0.3', '191,222,119'], ['0.4', '143,183,22'], ['0.6', '57,135,0'], ['0.8', '5,100,0']],
+  },
+  temperature: {
+    ends: ['Cooler air', 'Warmer air'],
+    ticks: [['−53 °C', '94,79,162'], ['−31 °C', '173,222,163'], ['−8 °C', '254,253,188'], ['14 °C', '252,168,94'], ['35 °C', '214,64,78']],
+  },
+}
+
 export default function FieldMap({ points, drawing, onPoint, center, recenterRequest, overlay, compact, children }) {
   const element = useRef(null)
   const map = useRef(null)
@@ -105,6 +120,8 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
     return () => shape.setMap(null)
   }, [points, status, drawing])
 
+  const legend = legends[overlay?.legend]
+
   return <div className={compact ? 'map map-small' : 'map'}>
     <div className="map-canvas" ref={element} />
     {status !== 'ready' && <div className="map-message">
@@ -112,7 +129,23 @@ export default function FieldMap({ points, drawing, onPoint, center, recenterReq
       <strong>{status === 'loading' ? 'Loading satellite map…' : 'Satellite map unavailable'}</strong>
       <span>{compact ? 'The field outline is illustrative.' : 'Explore the climate report with the sample field.'}</span>
     </div>}
-    {status === 'ready' && overlay?.label && <div className="map-legend">{overlay.label}</div>}
+    {status === 'ready' && (drawing || legend || points.length > 0) && <div className="map-notes">
+      {drawing && <div className="map-status">
+        {points.length} {points.length === 1 ? 'corner' : 'corners'} placed · tap Finish drawing to close the outline
+      </div>}
+      {legend ? <figure className="map-legend">
+        <figcaption>{overlay.label}</figcaption>
+        <div className="legend-ends"><span>{legend.ends[0]}</span><span>{legend.ends[1]}</span></div>
+        <ul className="legend-ticks">
+          {legend.ticks.map(([value, rgb]) => <li key={value}>
+            <span style={{ backgroundColor: `rgb(${rgb})` }} aria-hidden="true" />
+            {value}
+          </li>)}
+        </ul>
+      </figure> : points.length > 0 && <div className="map-legend outline-legend">
+        <span aria-hidden="true" /> Field outline
+      </div>}
+    </div>}
     {status === 'ready' && children}
   </div>
 }
