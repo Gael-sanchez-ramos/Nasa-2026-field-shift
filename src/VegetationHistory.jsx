@@ -32,9 +32,6 @@ export default function VegetationHistory({ location }) {
         <strong>{cover}</strong>
         <small>{series.year} · greener means more plant cover</small>
       </span>
-      <span className="green-strip" aria-hidden="true">
-        {series.observations.map(({ date, ndvi }) => <i key={date} style={{ background: greenness(ndvi) }} />)}
-      </span>
     </summary>
     <div className="stat-body">
       <p className="stat-read">Each mark is one satellite look. Brown is sparse cover. Green is a full canopy.</p>
