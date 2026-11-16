@@ -1,90 +1,60 @@
-# Field Shift
+# Xopan
 
-A crop rotation decision tool for farmers in Nuevo León. The first version shows regional historical climate for a sample field or a field outlined on a satellite map.
+Xopan helps rainfed farmers in Nuevo León, Mexico, compare what to plant after sorghum. It brings NASA climate and satellite data, local soil mapping, and farmer priorities into one field report. We built it for the NASA Space Apps Challenge 2026 challenge [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/field-shift-adapting-farms-with-nasa-data/).
 
-## Team
+**[Try the live app](https://field-shift-eosin.vercel.app/)** and select **Use sample field**.
 
-Read [docs/README.md](docs/README.md) before opening an AI chat or adding a screen.
+## Try the pilot
 
-Do not add yourself as a collaborator on this repository. Do not add team members on the NASA Space Apps site. Do not add `Co-authored-by` trailers for an AI or for anyone outside the six-person team. If you cannot push, send the file in the team chat and Gael commits it. The team is closed: Ross, Gael, Mau, Edson, Salva, Axel.
+1. **Find a field.** Outline a field on the satellite map, or use the sample field near Linares. The sample boundary is illustrative.
+2. **Compare conditions.** Switch between **Typical year** and **Dry year**. At the sample location, NASA POWER estimates **711 mm of rain in 2017** and **623 mm in 2023**. Use **Map view** to explore rainfall, air temperature, vegetation greenness, soil moisture, and soil water retention.
+3. **Explore rotations.** Compare grain sorghum again, sorghum followed by dry beans, or sorghum followed by forage sorghum. Set your priorities for income, water saving, and soil health, then open **Why this position?** to see how each score was calculated.
+
+The ranking weights the team's ratings by the farmer's priorities. Historical climate and mapped soil provide context for the comparison; they do not change the score. Irrigation availability changes the guidance in the report. Xopan helps farmers decide what to investigate before planting. It does not predict yield, profit, or how much irrigation a field needs.
+
+## Data sources and coverage
+
+| Source | How Xopan uses it |
+| --- | --- |
+| [NASA POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) | Regional daily corrected precipitation (`PRECTOTCORR`) and maximum and minimum air temperature (`T2M_MAX`, `T2M_MIN`), from 2015–2024 UTC. The app sums rainfall by calendar year, selects the year nearest the median as typical, and uses the second-driest complete year as dry. Drawn fields query an interior point; the sample report uses bundled data. |
+| [NASA GPM IMERG](https://power.larc.nasa.gov/docs/methodology/data/sources_meteorology/#imerg) | Regional average daily rainfall maps for August 2017 and 2023. |
+| [NASA MERRA-2](https://power.larc.nasa.gov/docs/methodology/data/sources_meteorology/#merra-2) and [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/access-basics/) | Monthly air temperature at 2 m: global GIBS tiles and regional August maps for the sample years. GIBS also supplies the monthly MODIS Terra NDVI map layer. |
+| [NASA POWER / SMAP Level 4](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap) | Estimated moisture in the top meter of soil. The sample report shows weekly and annual values; the regional map shows August of each sample year. The source grid is about 9 km. |
+| [NASA HLS Sentinel-2 Vegetation Indices v2.0](https://data.nasa.gov/dataset/hls-sentinel-2-multi-spectral-instrument-vegetation-indices-daily-global-30-m-v2-0-90ed0) via [AppEEARS](https://appeears.earthdatacloud.nasa.gov/api/) | NDVI history at the sample point at 30 m. The report shows the 2023 record for either climate scenario. NDVI describes vegetation greenness, not crop type, yield, or crop health on its own. |
+| [INEGI Edaphology Series II, Linares G14-11](https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=702825236120) | Mapped topsoil texture at 1:250,000. The sample point falls in unit `VRmzpe+KScco/3`, displayed as **Clayey soil**. The [INEGI guide](https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/702825231606.pdf) defines the texture classes. This is not a field lab result. |
+| [ISRIC SoilGrids](https://maps.isric.org/generated/soilgrids/wv0033.html) | Static estimate of soil water retention at 33 kPa and 15–30 cm depth around Linares, from the 250 m source product. It does not show how wet the soil was in a given year. |
+| [INIFAP's Nuevo León rotation study, Table 6](https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1) | Regional reference for the sorghum–dry bean sequence. It does not validate the numerical ratings used in the pilot. |
+
+The sample point is **24.8919167° N, 99.5430833° W**. The regional map layers and the INEGI lookup have limited coverage. Open **Data sources and method** for the sources and periods behind the report. Expanding the pilot would require locally validated crop options, planting calendars, and soil data.
 
 ## Run locally
+
+Use Node.js **20.9 or later** and npm.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Select **Use sample field** to open the report. To enable satellite drawing, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Enable Maps JavaScript API and restrict the browser key to your local and deployed origins. See [Google Maps setup](https://developers.google.com/maps/documentation/javascript/get-api-key).
+Open [http://localhost:3000](http://localhost:3000). The sample report works without a Maps key. To enable the satellite map and drawing, copy [`.env.example`](.env.example) to `.env.local` and set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Use a [Google Maps browser key](https://developers.google.com/maps/documentation/javascript/get-api-key) restricted to the Maps JavaScript API and the sites that use it. Keep `.env.local` out of Git. For Vercel, add the variable in the project settings before building.
 
-## Deploy to Vercel
+```sh
+npm run lint
+npm run build
+```
 
-Import the repository and select the **Next.js** framework preset. Set
-`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` in the deployment environment before building.
-The Maps key is included in the browser bundle. Restrict a standard key to the
-Maps JavaScript API and the origins where the app runs.
+## Refresh the bundled data
 
-## Data sources and method
+The demo caches are already included. Run these scripts from the repository root only if you need to regenerate them.
 
-- [NASA POWER Daily Point API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) provides corrected precipitation (`PRECTOTCORR`, mm/day), daily maximum air temperature (`T2M_MAX`, °C), and daily minimum air temperature (`T2M_MIN`, °C). See the [parameter dictionary](https://power.larc.nasa.gov/docs/tutorials/parameters/).
-- The demo point is 24°53′30.9″ N, 99°32′35.1″ W. The displayed boundary is illustrative. The [NASA POWER request](https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M_MAX,T2M_MIN&community=AG&longitude=-99.5430833&latitude=24.8919167&start=20150101&end=20241231&format=JSON&time-standard=UTC) is cached in `src/sample.json`. Refresh the NDVI cache for this point using the script below. Drawn fields use an interior point to request the regional grid data.
-- The report sums rainfall over complete calendar years from 2015 through 2024 (UTC), then picks the year closest to median rainfall and the second-driest year. Temperature values are the hottest daily maximum and coldest daily minimum of each selected year. Values describe regional historical climate.
-- [INIFAP's Nuevo León study, Table 6](https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1) includes a sorghum–dry bean sequence. The crop cards introduce the options. Local planting windows, soil, and irrigation demand still need validation before doing a crop-specific comparison.
+| Data | Command and requirements |
+| --- | --- |
+| HLS vegetation history | `python3 scripts/fetch_ndvi.py`. Sign in to AppEEARS with an Earthdata account first; the script prompts for credentials. |
+| Weekly and annual SMAP values | `python3 scripts/cache_smap.py` with NumPy and numcodecs. |
+| Regional rainfall and air temperature maps | `python3 scripts/cache_imerg.py` and `python3 scripts/cache_imerg.py --temperature` with NumPy and numcodecs. |
+| Regional SMAP moisture and SoilGrids retention maps | `python3 scripts/cache_moisture_maps.py` with NumPy, numcodecs, Pillow, tifffile, and imagecodecs. |
+| INEGI soil lookup | Download the Linares shapefile ZIP and run `python3 scripts/prepare_soil.py path/to/download.zip public/soil/linares.json` with pyshp and pyproj. |
 
-## Cache vegetation history for the demo
+## Credits
 
-Run `python3 scripts/fetch_ndvi.py` in a terminal. Sign in to
-[NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/) with your Earthdata
-account first to authorize the service. The script prompts for credentials,
-submits a point extraction for the cached dry year and waits for the CSV.
-It saves valid daily values to `src/sample-ndvi.json`. Reload the local app
-and select **Use sample field**. The JSON contains observations and provenance
-only. The hosted application reads that cache at build time.
-
-The [AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/) supplies
-NDVI from [HLS Sentinel-2 Vegetation Indices v2.0](https://data.nasa.gov/dataset/hls-sentinel-2-multi-spectral-instrument-vegetation-indices-daily-global-30-m-v2-0-90ed0)
-at 30 m for the demo point. The [HLS VI user guide](https://lpdaac.usgs.gov/documents/2088/HLS_VI_User_Guide_V2.pdf)
-describes the product cloud mask. The script excludes missing and out-of-range
-values and takes the median when multiple values share a date.
-
-## Local soil map
-
-The app looks up the demo point or a point inside a finished field outline in
-the bundled [INEGI Edaphology Series II, Linares G14-11 sheet](https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=702825236120)
-at 1:250,000. The lookup runs in the browser. The map unit uses `CLAVE_WRB`
-and the dominant surface texture uses `CLASE_TEXT`, interpreted using the
-[INEGI Series II guide](https://www.inegi.org.mx/contenidos/productos/prod_serv/contenidos/espanol/bvinegi/productos/nueva_estruc/702825231606.pdf).
-The demo point intersects unit `VRmzpe+KScco/3`, with fine mapped texture.
-Outside the Linares sheet or where a texture is missing, the app reports
-that mapped texture is unavailable.
-
-To regenerate the bundled layer, download the SHP ZIP from the INEGI sheet
-and run `python3 scripts/prepare_soil.py path/to/download.zip public/soil/linares.json`
-with `pyshp` and `pyproj` installed.
-
-## Regional root-zone moisture
-
-In **Map view**, choose **Soil moisture** for monthly NASA POWER / SMAP Level 4
-RZMC (0–100 cm) in August 2017 or 2023, or **Soil water retention** for the
-static ISRIC SoilGrids mean prediction at 33 kPa and 15–30 cm depth.
-Both legends show percent water by volume with separate scales. The SMAP map
-covers the Nuevo León region on a roughly 9 km grid. The SoilGrids layer covers
-the demo area around Linares using the 250 m source product. The layer shows a
-soil property, not the amount of water in the soil on a given date.
-
-Run `python3 scripts/cache_moisture_maps.py` to rebuild the overlays
-(NumPy, numcodecs, Pillow, tifffile, and imagecodecs required).
-Sources: [NASA POWER SMAP](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap)
-and [ISRIC SoilGrids WCS](https://maps.isric.org/generated/soilgrids/wv0033.html).
-
-The sample field shows weekly and annual volumetric water content for its
-typical and dry rainfall years using [NASA POWER / SMAP Level 4](https://power.larc.nasa.gov/docs/methodology/data/sources_hydrology/#smap).
-The `RZMC` field describes the regional 0–100 cm soil column. The bundled data
-uses the closest cell in the POWER daily UTC SMAP Zarr archive. Weekly means
-use seven-day bins starting January 1, with a shorter final bin as needed.
-Both charts share a scale. These values describe total modeled soil water
-content and require local soil and crop information to estimate plant-available water.
-
-Regenerate the demo cache with `python3 scripts/cache_smap.py` with NumPy and
-numcodecs installed. The script requires a complete series for each demo year
-and writes `src/sample-smap.json`.
+Xopan uses Next.js, React, Google Maps, Google Fonts (DM Sans and Instrument Serif), Python, and Vercel. The team used OpenAI Codex to help draft and revise application code, data preparation scripts, interface text, and documentation. The environmental data come from the sources listed above. The running app uses a weighted calculation, with no generative AI model in the ranking.

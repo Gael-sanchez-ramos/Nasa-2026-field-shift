@@ -1,5 +1,5 @@
 // Team estimates, 2026-11-14. Ordinal 1–5 preferences, not NASA data,
-// measured water demand, profit, or a yield model. See docs/FUENTES.md §4.
+// measured water demand, profit, or a yield model. See "Data sources and coverage" in README.md.
 export const estimateNotice = 'Team estimate, not a yield model.'
 
 export const crops = [
