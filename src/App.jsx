@@ -5,6 +5,8 @@ import FieldMap from './FieldMap'
 import VegetationHistory from './VegetationHistory'
 import RootZoneMoisture from './RootZoneMoisture'
 import LocalSoil from './LocalSoil'
+import RankingExplanation from './RankingExplanation'
+import DataSources from './DataSources'
 import { fieldPoint, loadClimate, nasaSource } from './climate'
 import sample from './sample.json'
 import imergMap from './imerg-map.json'
@@ -21,9 +23,9 @@ const priorities = [
   ['income', 'Income'], ['water', 'Water saving'], ['soil', 'Soil health'],
 ]
 const cropAdvice = {
-  'grain-sorghum': 'Keep grain sorghum for the next season. Check local grain prices and your costs.',
-  'sorghum-bean': 'Try dry beans after sorghum. Check local planting dates and how well water drains.',
-  'forage-sorghum': 'Follow grain sorghum with sorghum for animal feed. Check local water needs and who would buy the feed.',
+  'grain-sorghum': 'Compare continuing grain sorghum for the next season. Check local grain prices and your costs.',
+  'sorghum-bean': 'Explore dry beans after sorghum. Check local planting dates and how well water drains.',
+  'forage-sorghum': 'Explore sorghum for animal feed after grain sorghum. Check local water needs and who would buy the feed.',
 }
 const irrigationAdvice = {
   Limited: 'Check when irrigation is available and how much water you can use during the growing season.',
@@ -34,7 +36,7 @@ const irrigationAdvice = {
 const reportSections = ['NASA observations', 'Local soil', 'Crop characteristics', 'Farmer priorities']
 const mapLayers = [
   ['satellite', 'Satellite', 'Natural color'],
-  ['ndvi', 'Crop health', 'NDVI · Plant greenness only'],
+  ['ndvi', 'Vegetation greenness', 'NDVI · Plant greenness only'],
   ['imerg', 'Rainfall', 'NASA IMERG · Nuevo León area'],
   ['temp', 'Temperature (global)', 'MERRA-2 · Global scale'],
   ['regional-temp', 'Temperature (regional)', 'MERRA-2 · Nuevo León scale'],
@@ -369,7 +371,7 @@ export default function App() {
             <div className="section-head">
               <div><div className="eyebrow">03 / EXPLORE THE TRADE-OFFS</div><h2 id="crop-title">Rotation suggestions</h2></div><span className="badge">3 possibilities</span>
             </div>
-            <p>Ranked by your priorities and team estimates. Climate and soil data help you compare risks; they do not change this order.</p>
+            <p className="estimate-disclosure"><strong>Illustrative ranking · Team estimates.</strong> Ranked by your priorities and team estimates. Climate and soil data help you compare risks; they do not change this order.</p>
             <div className="crops" ref={cropContainer}>{comparison.ranked.map(crop => {
               const rank = comparison.ranked.findIndex(option => Math.abs(option.score - crop.score) < 1e-10) + 1
               return <article data-crop={crop.id} key={crop.id} className={rank === 1 ? 'leader' : undefined}>
@@ -381,6 +383,7 @@ export default function App() {
                 <h3>{crop.name}</h3>
                 <p>{cropAdvice[crop.id]}</p>
                 {crop.id === 'sorghum-bean' && <a className="source" href="https://cienciasagricolas.inifap.gob.mx/index.php/agricolas/es/article/download/2186/3423?inline=1">Regional study, Table 6</a>}
+                <RankingExplanation crop={crop} weights={comparison.weights} />
               </article>
             })}</div>
             <p className="decision-note" aria-live="polite">{irrigationAdvice[irrigation]}</p>
@@ -405,6 +408,7 @@ export default function App() {
           </details>
         </div>
       </section>
+      <DataSources report={report} />
       <footer className="page-footer"><strong>Xopan.</strong><span>Grounded in observations. Guided by you.</span><span>Nuevo León · NASA Space Apps 2026</span></footer>
     </main>
   </>
