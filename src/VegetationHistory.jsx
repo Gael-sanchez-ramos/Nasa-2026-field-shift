@@ -14,7 +14,7 @@ export default function VegetationHistory({ location }) {
   const series = cache?.location.lat === location.lat && cache?.location.lng === location.lng ? cache : null
   if (!series?.observations.length) return <details className="stat-card panel">
     <summary>
-      <span className="stat-kicker">Crop health</span>
+      <span className="stat-kicker">Vegetation greenness</span>
       <span className="stat-poster leaf"><strong>No record</strong><small>Greenness for this point is not saved yet.</small></span>
     </summary>
   </details>
@@ -27,7 +27,7 @@ export default function VegetationHistory({ location }) {
 
   return <details className="stat-card panel">
     <summary>
-      <span className="stat-kicker">Crop health</span>
+      <span className="stat-kicker">Vegetation greenness</span>
       <span className="stat-poster leaf">
         <strong>{average.toFixed(2)}</strong>
         <small>Average observed NDVI · {series.year}</small>
