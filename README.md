@@ -57,4 +57,4 @@ The demo caches are already included. Run these scripts from the repository root
 
 ## Credits
 
-Xopan uses Next.js, React, Google Maps, Google Fonts (DM Sans and Instrument Serif), Python, and Vercel. The team used OpenAI Codex to help draft and revise application code, data preparation scripts, interface text, and documentation. The environmental data come from the sources listed above. The running app uses a weighted calculation, with no generative AI model in the ranking.
+Xopan uses Next.js, React, Google Maps, Google Fonts (DM Sans and Instrument Serif), Python, and Vercel. The team used OpenAI Codex, Claude Code, Grok, and Kimi as development aids, including for application code, data preparation scripts, interface text, and documentation. The environmental data come from the sources listed above. The running app uses a weighted calculation, with no generative AI model in the ranking.
